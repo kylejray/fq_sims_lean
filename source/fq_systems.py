@@ -2,6 +2,8 @@ from protocol_designer.potentials import Potential
 from protocol_designer.protocol import Protocol, Compound_Protocol
 import numpy as np
 
+###### SINGLE FLUX QUBIT######
+
 #first we defined the potential
 
 def flux_qubit_pot(p,pdc, params):
@@ -18,7 +20,7 @@ def flux_qubit_force(p,pdc, params):
     
     return (-dp, -dpdc)
 #realistic:
-default_real = (-.1018, -2.3, 12, 6.2, .1)
+default_real = (-.06, -2.3, 12, 6.2, .2)
 #symmetric approximation:
 default_symm = (0, -2.3, 12, 6.2, 0)
 #domain
@@ -26,7 +28,7 @@ dom = ((-3,-3),(3,-1))
 
 fq_pot = Potential(flux_qubit_pot, flux_qubit_force, 5, 2, default_params=default_symm, relevant_domain=dom)
 
-#once the potential is done, we make some simple one-time-step protocols, taht will serves as buulding blocks
+#once the potential is done, we make some simple one-time-step protocols, that will serves as buulding blocks
 
 #the protocol below will start with the default parameters and then go to the 'flip parameters' at t=1
 prm = np.zeros((5,2))
@@ -51,3 +53,52 @@ flip_off_shift.time_shift(1)
 #combinig protocol steps into a Compound_Protocol allows for a full computational cycle
 flip_prot = Compound_Protocol([flip_on,flip_off_shift])
 
+###### 2 COUPLED RF/RF QUBITS######
+
+## RF RF COUPLING ##
+#assumes derivative with respect to dimensionless arguments for the force, in other words the fluxes are scaled by 2pi/Phi_0 #
+
+#helper functions to make the potential and force functions more palatable
+def RF_RF_helper(beta, dbeta, arg1, arg2):
+    return 2 * ( -beta * np.cos(arg1)* np.cos(arg2/2) + dbeta * np.sin(arg1)* np.sin(arg2/2))
+
+def RF_RF_helper_deriv(beta, dbeta, arg1, arg2, which):
+    if which == 1:
+        return 2 * ( beta * np.sin(arg1)* np.cos(arg2/2) + dbeta * np.cos(arg1)* np.sin(arg2/2))
+    if which == 2: 
+        return   beta * np.cos(arg1)* np.sin(arg2/2) + dbeta * np.sin(arg1)* np.cos(arg2/2)
+
+#define the potential energy
+def RF_RF_potential(zeta, zetap, pdc, pdcp, params):
+    zetax, zetaxp, pxdc, pxdcp, mu, gamma, beta, dbeta = params
+
+    z_quad = 1/(2*(1-mu)) * (zetax-zeta)**2 + 1/(2*(1+mu)) * (zetaxp-zetap)**2
+    dc_quad = gamma * ( (pxdc-pdc)**2 + (pdcp-pxdcp)**2 )
+
+    phi = .5*(-zeta+zetap)
+    phip = .5*(zeta+zetap)
+
+    coupling = RF_RF_helper(beta, dbeta, phi, pdc) + RF_RF_helper(beta, dbeta, phip, pdcp)
+
+    return z_quad + dc_quad + coupling
+
+#define the force from it
+def RF_RF_force(zeta, zetap, pdc, pdcp, params):
+    zetax, zetaxp, pxdc, pxdcp, mu, gamma, beta, dbeta = params
+    phi = .5*(-zeta+zetap)
+    phip = .5*(zeta+zetap)
+
+    d_zeta = -1/(1-mu) * (zetax-zeta) + -.5* RF_RF_helper_deriv(beta, dbeta, phi, pdc, 1) + .5* RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 1)
+    d_zetap = -1/(1+mu) * (zetaxp-zetap) + .5* RF_RF_helper_deriv(beta, dbeta, phi, pdc, 1) + .5* RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 1)
+    d_pdc = -2*gamma * (pdc-pxdc) + RF_RF_helper_deriv(beta, dbeta, phi, pdc, 2)
+    d_pdcp = -2*gamma * (pdcp-pxdcp) + RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 2)
+
+    return (-d_zeta, -d_zetap, -d_pdc, -d_pdcp)
+
+
+RFRF_default = (0, 0, 0, 0, .5, 12, 6, 0,)
+RFRF_dom = ((-7, -7, -7, -7),(7, 7, 7, 7))
+
+RF_RF_pot = Potential(RF_RF_potential, RF_RF_force, 8, 4, default_params=RFRF_default, relevant_domain=RFRF_dom)
+
+#no systems/protocols prebuilt

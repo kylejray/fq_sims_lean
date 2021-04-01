@@ -10,7 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
 
 
-is_path = os.path.expanduser('~/source/informational_states/')
+is_path = os.path.expanduser('source/informational_states/')
 sys.path.insert(0, is_path)
 
 from measure import MeasurementDevice, Measurement
