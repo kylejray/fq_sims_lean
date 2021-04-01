@@ -280,11 +280,11 @@ where the $\beta,\delta\beta \equiv \frac{2\pi L}{\Phi_0} I_{\pm}$. Note that th
 Imagine two identical devices, each with it's own set of variables denoted from eachother with primes ($I_1'$, for example being the current in the second device along the same section as $I_1$ is in the first device). The absolute simplest coupling I can imagine is to couple the "rf" squid sections together with mutual inductances, $M, M`$. This changed our equations very little. The junction and fluxoid qunatization equations will not be changed at all, we still have equations, for example, the equations
 
 \begin{align}
-    I_3 = I_{c_1} \sin \theta_1 + \frac{C}{2} \ddot{\Phi}_1
+    I_3 = I_{c_1} \sin \theta_1 + \frac{C}{2} \ddot{\Phi}_1 + \frac{1}{R} \dot{\Phi}_1
     \\ 
-    I_4 = I_{c_2} \sin \theta_2 + \frac{C}{2} \ddot{\Phi}_2 
-    \end{align}
-Of course, note that we now have 2 sets of these: one for the original device and one for the "primed" one.  The flux threading each subloop loop will, however, see the addition of the mutual inductances between the two devices:
+    I_4 = I_{c_2} \sin \theta_2 + \frac{C}{2} \ddot{\Phi}_2 + \frac{1}{R} \dot{\Phi}_2
+    \end{align} 
+Again, we are going to supress the dissipative terms for now-- to simplify the algebra. Of course, note that we now have 2 sets of these: one for the original device and one for the "primed" one.  The flux threading each subloop loop will, however, see the addition of the mutual inductances between the two devices:
 
 \begin{align}
     MI_1' + I_1 L - I_3 \ell + \phi_{Lx} = \Phi_{L} = \phi_1
@@ -294,7 +294,7 @@ Of course, note that we now have 2 sets of these: one for the original device an
     I_3 \ell - I_4 \ell + \phi_{xdc} = \Phi_{C} = -(\phi_1 - \phi_2)
 \end{align} 
 
-We will have an analogous set of these for the primed device, where the mutual inductance $M'$ is coupled to the unprimed currents $I_1, I_2$. This coupling is particularly simple because of thr symmetry we get between the two devices. It is straightforward to see how the same definitions of $\phi,\phi_{dc}$ (and $\phi',\phi_{dc}'$) Will lead to the following equation of motion for $\phi,\phi'$. Namely, when we solve for $I_3+I_4$ in each circuit using the equations above-- we get:
+We will have an analogous set of these for the primed device, where the mutual inductance $M'$ is coupled to the unprimed currents $I_1, I_2$. This coupling is particularly simple because of the symmetry between the two devices. It is straightforward to see how the same definitions of $\phi,\phi_{dc}$ (and $\phi',\phi_{dc}'$) Will lead to the following equation of motion for $\phi,\phi'$. Namely, when we solve for $I_3+I_4$ in each circuit using the equations above-- we get:
 
 \[ I_3 + I_4 = \frac{2}{\ell+L}\left(\phi_x - \phi \right) - \frac{M}{\ell+L} (I_3'+I_4') \]
 
@@ -338,7 +338,7 @@ Let's ignore the $F$ and constant part of the EOM for now, and work on diagonali
     C A \ddot{\mathbf{\phi}} = \frac{1}{L} \phi 
 }
 \end{align}
-where $A = \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors/values $(-\sqrt\frac{\mu}{\mu'}, 1)/1-\sqrt{\mu\mu'}$ and $(\sqrt\frac{\mu}{\mu'}, 1)/1+\sqrt{\mu\mu'}$. These eigenvectors are not generally orthogonal to each other, except in the symmetric case ($\mu'=\mu$). So, we specialize to this case, which suggests new coordiantes $\eta = -\phi +\phi'$ and $\eta' = \phi+\phi'$ with associated $\eta_x = -\phi_x + \phi_x'$ and $\eta_x' = \phi_x + \phi_x'$ . The effective EOM of these composite degrees of freedom can be found by adding and subtracting the EOM above, this yields:
+where $A = \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors/values $(-\sqrt\frac{\mu}{\mu'}, 1)/1-\sqrt{\mu\mu'}$ and $(\sqrt\frac{\mu}{\mu'}, 1)/1+\sqrt{\mu\mu'}$. These eigenvectors are not orthogonal to each other, unless $\mu'=\mu$. We specialize to this case, which suggests new coordiantes $\eta = -\phi +\phi'$ and $\eta' = \phi+\phi'$ with associated $\eta_x = -\phi_x + \phi_x'$ and $\eta_x' = \phi_x + \phi_x'$ . The effective EOM of these composite degrees of freedom can be found by adding and subtracting the EOM above, this yields:
 
 \begin{multline}
     C(1-\mu) \ddot{\eta} = \frac{1}{L} (\eta_x-\eta) - \\ F(\varphi', \varphi'_{dc}) - \mu F(\varphi,\varphi_{dc}) + F(\varphi, \varphi_{dc}) + \mu F(\varphi',\varphi_{dc}')
@@ -447,8 +447,8 @@ It has been constructed to satisfy the $\phi_{dc}, \phi'_{dc}$ parts of the set 
 The same process verifies that this potential also satisfies $-\partial_{\eta'} U_C = F(\varphi, \varphi_{dc}) + F(\varphi', \varphi'_{dc}) $. Taking into consideration the quadratic terms as well, we have:
 
 \begin{align*}
-U &= \frac{1}{2L(1-\mu)} (\eta_x-\eta)^2 + \frac{1}{2L(1+\mu)} (\eta'_x-\eta')^2 \\
- &+ \frac{\gamma}{L} \left( (\phi_{xdc}-\phi_{dc})^2 + (\phi'_{xdc}-\phi'_{dc})^2\right) + U_c
+U &= \frac{1}{2L(1-\mu)} (\eta-\eta_x)^2 + \frac{1}{2L(1+\mu)} (\eta'-\eta'_x)^2 \\
+ &+ \frac{\gamma}{L} \left( (\phi_{dc}-\phi_{xdc})^2 + (\phi'_{dc}-\phi'_{xdc})^2\right) + U_c
 \end{align*}
 
 Once again, we can set an energy scale $U_0 = \frac{\Phi_0^2}{2\pi^2L}$ for the potential-- and write in in terms of just the nondimensional $\zeta$ coordinates:
@@ -484,31 +484,31 @@ We can re-write the above as:
     \\
     &\ddot{\phi}_{dc} = -\frac{2}{RC} \dot{\phi}_{dc} - \frac{4}{C}\partial_{\phi_{dc}} U(\phi, \phi_{dc})
     \end{align}
-To help us connect the above to a standard langevin' perspective, lets see the connection between the equation above and a prototypical langevin equation with the added thermal noise:
+To help us connect the above to a standard langevin' perspective, lets see the connection between the equation above and a prototypical system of langevin equations with the added thermal noise:
 
-\[ dv = -\frac{\lambda}{m} v dt - \frac{1}{m} \partial_x U(x) dt + \frac{1}{m} r(t)\sqrt{2\lambda \kappa dt} \]
+\[ dv_i = -\frac{\lambda_i}{m_i} v_i dt - \frac{1}{m_i} \partial_{x_i} U(x) dt + \frac{1}{m_i} r(t)\sqrt{2\lambda_i \kappa dt} \]
 
 where $\kappa\equiv k_B T$. We can see that by defining our variables corrrectly, we can match it to the EOM we have:
 \begin{align*}
-x &= (\phi, \phi_{dc}) \\
+x &=  (\phi, \phi_{dc}) \\
 v &= (\dot{\phi}, \dot{\phi}_{dc}) \\
 m &= ( C, \frac{C}{4}) \\
 \lambda &= (\frac{2}{R}, \frac{1}{2R})
 \end{align*}
+From here on out, we will drop the subscript $i$, and varaibles with no subscript will implicitply refer to the full system of equations.\\
 
-However, we also want to be able to write everything in terms of dimensionful constants and dimensionless variables. A nice approach for this is to define scaling factors for all of our quantities according to the following perscription $ x = x' x_c$ where $x_c$ is a dimensionfull constant.
+We want to write everything in terms of dimensionful constants and dimensionless variables. A nice approach for this is to define scaling factors for all of our quantities according to the following perscription: $ x = x' x_c$ where $x_c$ is a dimensionfull constant.
 
-Choosing $m_c = C $, and $\lambda_c = \frac{1}{R}$, are obviously good choices. 
-\\
-Additionally, because our potential is written in terms of $U = U_0 * V(\frac{2\pi}{\Phi_0} \cdot x) $ we define $x_c = \frac{\Phi_0}{2\pi}$. This allows to say take V as a nondimensional potential as a function of the nondimensionalized positions since $\frac{2\pi}{\Phi_0} \cdot x = \frac{x}{x_c} = x' $.
-\\
+Choosing $m_c = C $, and $\lambda_c = \frac{1}{R}$, are obvious choices. Additionally, because our potential is written in terms of $U = U_0 * V(\frac{2\pi}{\Phi_0} \cdot x) $ we define $x_c = \frac{\Phi_0}{2\pi}$. This allows to say take V as a function of the nondimensionalized positions since $\frac{2\pi}{\Phi_0} \cdot x = \frac{x}{x_c} = x' $.
+
+
 Finally, we want to set a good energy scale for our system. If we want to be able to write nondimensional kinetic energies as $\frac{1}{2} m' v'^2$ Then we must set the energy scaling as:
 
 \[ E_c  = m_c \frac{ x^2_c}{t^2_c} \]
 
-However, we still havent chosen the dimensional enegetic scale, setting $t_c$ will pick this for us. We have basically two choices that make sense. one is to choose the temperature scale ($KE'=1$ corresponds to $k_B T$ units of energy), the other is to choose the energy scale of the potential ($KE'=1$ corresponds to $U_0$ units of energy). We shall do the latterm which yields:
+However, we still havent chosen the dimensional enegetic scale, setting $t_c$ will pick this for us. We have basically two choices that make sense. one is to choose the temperature scale ($KE'=1$ corresponds to $k_B T$ units of energy), the other is to choose the energy scale of the potential ($KE'=1$ corresponds to $U_0$ units of energy). We shall do the latter which yields:
 
-\[ U_0 = m_c \frac{ x^2_c}{t^2_c} \]
+\[ E_c = U_0 = m_c \frac{ x^2_c}{t^2_c} \]
 
 \[ \frac{x_c^2}{L} = m_c \frac{ x^2_c}{t^2_c} \]
 
@@ -518,14 +518,14 @@ So, we set our timescale to be $t_c = \sqrt{LC} $. This seems like a good timesc
 Let's write out langevin equation in terms of the nondimensional quantities:
 \begin{align*}
 dv' \frac{x_c}{t_c} &= -\frac{\lambda' \lambda_c}{m' m_c} v' x_c  dt' \\
- &- \frac{1}{m' m_c} \left(\frac{U_0}{x_c} \partial_{x'} V(x')\right)  t_c dt' \\
+ &- \frac{1}{m' m_c} \left(\frac{U_0}{x_c} \partial_{x'} U'(x')\right)  t_c dt' \\
   &+ \frac{1}{m'm_c} r(t)\sqrt{2\lambda'\lambda_c E_c \kappa' t_c dt'}
 \end{align*}
     
 Algebra yields:
 \begin{align*}
 dv' &= -\frac{\sqrt{LC} }{ RC} \frac{\lambda'}{m'} v' dt' \\
-&- \frac{1 }{ m'}  \partial_{x'} V(x') dt' \\
+&- \frac{1 }{ m'}  \partial_{x'} U'(x') dt' \\
 &+ \left(  \frac{L}{R^2 C} \right)^{1/4} \frac{\sqrt{\lambda'\kappa'}}{m'} r(t) \sqrt {2 dt'}
 \end{align*}
 Which we implement in simulations as:
@@ -537,6 +537,8 @@ where
     \theta &= \frac{1 }{ m'} \\
     \eta &= \left(  \frac{L}{R^2 C} \right)^{1/4} \frac{\sqrt{\lambda'\kappa'}}{m'} \\
     &\text{and} \\
+    x' &= (\varphi, \varphi_{dc}) \\
+    v' &= \frac{d}{dt'} x' \\
     \lambda' &= (2, 1/2) \\
     m &= ( 1, 1/4) \\
     \kappa' &= \frac{k_B T}{U_0}
@@ -544,7 +546,31 @@ where
 
 \subsection{Coupled Devices}
 
-WIP
+Reintroducing the resistive shunts, we have the following EOMs:
+
+\begin{align*}
+    C \ddot{\eta} + \frac{2 \dot{\eta}}{R} &= -\partial_{\eta} U_0 * U' \\
+    C \ddot{\eta}' + \frac{2 \dot{\eta'}}{R}  &= -\partial_{\eta'} U_0 * U' \\
+\frac{C}{2} \ddot{\phi}_{dc} + \frac{\dot{\eta'}}{R} &= -\partial_{\phi_{dc}} U_0 * U' \\
+\frac{C}{2} \ddot{\phi'}_{dc} + \frac{\dot{\eta'}}{R} &= -\partial_{\phi'_{dc}} U_0 * U'
+\end{align*}
+
+We can see that the same strategy of non-dimensionalizing will work fine. In fact, we have ven written the potential in the form of $U_0 * U'$ in anticipation of the energy scale we used in the single device case. Using the same scaling factors as above, we should be able to implement a simulation using essentially the same equation as before (albeit with a different potential).
+
+\[ dv' = -\gamma v' dt' - \theta \partial_{x'} U' + \eta r(t) \sqrt{2dt'} \]
+where
+\begin{align*}
+    \gamma &=  \frac{\sqrt{LC} }{ RC} \frac{\lambda'}{m'}  \\
+    \theta &= \frac{1 }{ m'} \\
+    \eta &= \left(  \frac{L}{R^2 C} \right)^{1/4} \frac{\sqrt{\lambda'\kappa'}}{m'} \\
+    &\text{and} \\
+    x' &= (\zeta, \zeta', \varphi_{dc}, \varphi'_{dc}) \\
+    v' &= \frac{d}{dt'} x' \\
+    \lambda' &= (2, 2, 1, 1) \\
+    m' &= ( 1, 1, 1/2, 1/2) \\
+    \kappa' &= \frac{k_B T}{U_0}
+\end{align*}
+
 
 \end{document}
 

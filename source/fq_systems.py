@@ -72,8 +72,8 @@ def RF_RF_helper_deriv(beta, dbeta, arg1, arg2, which):
 def RF_RF_potential(zeta, zetap, pdc, pdcp, params):
     zetax, zetaxp, pxdc, pxdcp, mu, gamma, beta, dbeta = params
 
-    z_quad = 1/(2*(1-mu)) * (zetax-zeta)**2 + 1/(2*(1+mu)) * (zetaxp-zetap)**2
-    dc_quad = gamma * ( (pxdc-pdc)**2 + (pdcp-pxdcp)**2 )
+    z_quad = 1/(2*(1-mu)) * (zeta-zetax)**2 + 1/(2*(1+mu)) * (zetap-zetaxp)**2
+    dc_quad = gamma * ( (pdc-pxdc)**2 + (pdcp-pxdcp)**2 )
 
     phi = .5*(-zeta+zetap)
     phip = .5*(zeta+zetap)
@@ -88,10 +88,10 @@ def RF_RF_force(zeta, zetap, pdc, pdcp, params):
     phi = .5*(-zeta+zetap)
     phip = .5*(zeta+zetap)
 
-    d_zeta = -1/(1-mu) * (zetax-zeta) + -.5* RF_RF_helper_deriv(beta, dbeta, phi, pdc, 1) + .5* RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 1)
-    d_zetap = -1/(1+mu) * (zetaxp-zetap) + .5* RF_RF_helper_deriv(beta, dbeta, phi, pdc, 1) + .5* RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 1)
-    d_pdc = -2*gamma * (pdc-pxdc) + RF_RF_helper_deriv(beta, dbeta, phi, pdc, 2)
-    d_pdcp = -2*gamma * (pdcp-pxdcp) + RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 2)
+    d_zeta = 1/(1-mu) * (zeta-zetax) + -.5* RF_RF_helper_deriv(beta, dbeta, phi, pdc, 1) + .5* RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 1)
+    d_zetap = 1/(1+mu) * (zetap-zetaxp) + .5* RF_RF_helper_deriv(beta, dbeta, phi, pdc, 1) + .5* RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 1)
+    d_pdc = 2*gamma * (pdc-pxdc) + RF_RF_helper_deriv(beta, dbeta, phi, pdc, 2)
+    d_pdcp = 2*gamma * (pdcp-pxdcp) + RF_RF_helper_deriv(beta, dbeta, phip, pdcp, 2)
 
     return (-d_zeta, -d_zetap, -d_pdc, -d_pdcp)
 
