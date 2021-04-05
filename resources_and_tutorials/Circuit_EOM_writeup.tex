@@ -269,7 +269,17 @@ Finally, we can introduce the energy scale $U_0 = \frac{ \Phi_0^2}{4\pi^2 L} $, 
     \\
 \end{align}
 
-where the $\beta,\delta\beta \equiv \frac{2\pi L}{\Phi_0} I_{\pm}$. Note that there is a difference between the epxression here and the potential in the PRR. This is because there is a $\pi$ phase shift in the definition of $\varphi$ depending on the reference. This seems to be done more often in modern work, though I am not sure why. We can see that defining both $\varphi,\varphi_{x}$ to have a pahse shift of $\pi$ would lead our last two terms to switch signs. Interestingly, the PRR has a positive sign for both terms-- though I dont think it is particularly important since the $\delta\beta$ term doesnt have a particular reason to be positive or nagative-- it will depend on particular fabrication details-- and will need to be measured for a given device.
+where the $\beta,\delta\beta \equiv \frac{2\pi L}{\Phi_0} I_{\pm}$. Note that there is a difference between the epxression here and the potential in the PRR. This is because there is a $\pi$ phase shift in the definition of $\varphi$ depending on the reference ($\varphi \to \varphi-\pi$). This seems to be done more often in modern work, I belive it is because it sets $\varphi=0$ to be the center of a well. We can see that defining both $\varphi,\varphi_{x}$ to have a pahse shift of $\pi$ would lead our last two terms to switch signs. Interestingly, the PRR has a positive sign for both terms-- though I dont think it is particularly important since the $\delta\beta$ term doesnt have a particular reason to be positive or nagative-- it will depend on particular fabrication details-- and will need to be measured for a given device.
+
+The potential given in the simulations is the one with the $\pi$-shifted definition of $\varphi$:
+
+\begin{align}
+    \frac{U}{U_0} \equiv V(\varphi, \varphi_{dc}) =  \frac{1}{2} (\varphi-\varphi_x)^2 + \frac{\gamma}{2} (\varphi_{dc}-\varphi_{xdc})^2
+    \\
+     + \beta \cos \varphi \cos \frac{\varphi_{dc}}{2} - \delta\beta \sin \varphi \sin \frac{\varphi_{dc}}{2}
+    \\
+\end{align}
+
 
 
  In this case, we were able to come up with a potential, but I want to note that it is not strictly necesarry to find the "potential" when the equations of motion are already known . Let's move on to find the EOM for some coupled devices.
@@ -465,6 +475,15 @@ where
     \frac{U_C}{U_0} = -2\beta \left[ \cos\varphi\cos\frac{\varphi_{dc}}{2} + \cos\varphi'\cos\frac{\varphi'_{dc}}{2} \right] + \\
     2\delta\beta \left[ \sin\varphi\sin\frac{\varphi_{dc}}{2} + \sin\varphi'\sin\frac{\varphi'_{dc}}{2} \right]
 \end{multline}
+
+As a final note, recall the convention to shift $\varphi$ by $\pi$. This means redefinig our $\zeta,\zeta'$ to be shifted by $2\pi$, because fo the $\frac{1}{2}$ that relates the $\zeta$'s to the $\varphi$'s. In terms of these new coordiantes, all that changes is:
+
+\begin{multline}
+    \frac{U_C}{U_0} = +2\beta \left[ \cos\varphi\cos\frac{\varphi_{dc}}{2} + \cos\varphi'\cos\frac{\varphi'_{dc}}{2} \right] - \\
+    2\delta\beta \left[ \sin\varphi\sin\frac{\varphi_{dc}}{2} + \sin\varphi'\sin\frac{\varphi'_{dc}}{2} \right]
+\end{multline}
+
+
 
 \section{Dimensionless analysis}
 

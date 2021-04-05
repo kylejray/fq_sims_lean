@@ -8,19 +8,19 @@ import numpy as np
 
 def flux_qubit_pot(p,pdc, params):
     px, pxdc, gamma, beta, dbeta= params
-    U = .5 * (p-px)**2 + .5*gamma*(pdc-pxdc)**2 + beta*np.cos(.5*pdc)*np.cos(p) + dbeta*np.sin(.5*pdc)*np.sin(p)
+    U = .5 * (p-px)**2 + .5*gamma*(pdc-pxdc)**2 + beta*np.cos(.5*pdc)*np.cos(p) - dbeta*np.sin(.5*pdc)*np.sin(p)
     return U
 
 def flux_qubit_force(p,pdc, params):
     px, pxdc, gamma, beta, dbeta= params
     
-    dp = (p-px) - beta*np.cos(.5*pdc)*np.sin(p) + dbeta*np.sin(.5*pdc)*np.cos(p)
+    dp = (p-px) - beta*np.cos(.5*pdc)*np.sin(p) - dbeta*np.sin(.5*pdc)*np.cos(p)
     
-    dpdc = gamma*(pdc-pxdc) - .5*beta*np.sin(.5*pdc)*np.cos(p) + .5*dbeta*np.cos(.5*pdc)*np.sin(p)
+    dpdc = gamma*(pdc-pxdc) - .5*beta*np.sin(.5*pdc)*np.cos(p) - .5*dbeta*np.cos(.5*pdc)*np.sin(p)
     
     return (-dp, -dpdc)
 #realistic:
-default_real = (-.06, -2.3, 12, 6.2, .2)
+default_real = (.06, -2.3, 12, 6.2, .2)
 #symmetric approximation:
 default_symm = (0, -2.3, 12, 6.2, 0)
 #domain
@@ -60,13 +60,13 @@ flip_prot = Compound_Protocol([flip_on,flip_off_shift])
 
 #helper functions to make the potential and force functions more palatable
 def RF_RF_helper(beta, dbeta, arg1, arg2):
-    return 2 * ( -beta * np.cos(arg1)* np.cos(arg2/2) + dbeta * np.sin(arg1)* np.sin(arg2/2))
+    return 2 * ( beta * np.cos(arg1)* np.cos(arg2/2) - dbeta * np.sin(arg1)* np.sin(arg2/2))
 
 def RF_RF_helper_deriv(beta, dbeta, arg1, arg2, which):
     if which == 1:
-        return 2 * ( beta * np.sin(arg1)* np.cos(arg2/2) + dbeta * np.cos(arg1)* np.sin(arg2/2))
+        return 2 * ( -beta * np.sin(arg1)* np.cos(arg2/2) - dbeta * np.cos(arg1)* np.sin(arg2/2))
     if which == 2: 
-        return   beta * np.cos(arg1)* np.sin(arg2/2) + dbeta * np.sin(arg1)* np.cos(arg2/2)
+        return   -beta * np.cos(arg1)* np.sin(arg2/2) - dbeta * np.sin(arg1)* np.cos(arg2/2)
 
 #define the potential energy
 def RF_RF_potential(zeta, zetap, pdc, pdcp, params):
