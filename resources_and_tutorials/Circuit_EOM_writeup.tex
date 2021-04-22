@@ -64,7 +64,7 @@ $\psi = \sqrt{\rho} e^{i\varphi}$. Here, we have considered that a large number 
  note the charge is $2e$, while the charge to mass ratio is the same as a single electron because we are dealing with pairs of electrons.
 \\
 \subsection{josephson equations}
-When we consider two superconductors "weakly linked" by a thin dialectric barrier, we can sort of treat them as a a single superconductor because $\varphi$ in one of the superconductors is not independent of the phase in the other). We assume each superconductor has a macroscoping wavefunction $\psi_{1,2} = \sqrt{\rho_{1,2}} e^{i\varphi_{1,2}}$ and write the hamiltonian over base states representing a particle in one superconductor or the other: $H =E_1 \ket{1}\bra{1} + E_2 \ket{2}\bra{2} + K \ket{1}\bra{2} + K \ket{1}\bra{2}$. A state vector in this basis is given by: $\ket{\psi} = \psi_1 \ket{1} + \psi_2\ket{2}$.  Setting $E_1 - E_2 = 2eV$, and using the shrodinger equation leads us to the josephson equations (I can expand on this if anyone is interested) for a junction where the potential across the junction is $V$:
+When we consider two superconductors "weakly linked" by a thin dialectric barrier, we can sort of treat them as a a single superconductor because $\varphi$ in one of the superconductors is not independent of the phase in the other). We assume each superconductor has a macroscoping wavefunction $\psi_{1,2} = \sqrt{\rho_{1,2}} e^{i\varphi_{1,2}}$ and write the hamiltonian over base states representing a particle in one superconductor or the other: $H =E_1 \ket{1}\bra{1} + E_2 \ket{2}\bra{2} + K \ket{1}\bra{2} + K \ket{2}\bra{1}$. A state vector in this basis is given by: $\ket{\psi} = \psi_1 \ket{1} + \psi_2\ket{2}$.  Setting $E_1 - E_2 = 2eV$, and using the shrodinger equation leads us to the josephson equations (I can expand on this if anyone is interested) for a junction where the potential across the junction is $V$:
 
 \begin{align}
     I = I_{c_1} \sin \varphi
@@ -91,7 +91,7 @@ First, we introduce a gauge invariant variable $\varphi_J$ for the phase differe
 \begin{align}
     \varphi_J = \int_{junction} \nabla \varphi \cdot dl -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl
     \\
-    = \varphi -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl
+    = \phi -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl
 \end{align}
 
 If we imagine a superconducting loop with a JJ interrupting it-- we can integrate around the loop to incorporate the phase chage across the junction into a quantization condition. Integrating around the whole loop gives
@@ -107,7 +107,7 @@ The above somes from a single-valuedness condition. If we integrate around the w
 
 
 \begin{align}
-    2\pi n &= \varphi + \int_{loop} \nabla \varphi \cdot dl
+    2\pi n &= \phi + \int_{loop} \nabla \varphi \cdot dl
     \\
     &= \varphi_J +  \frac{2\pi}{\Phi_0} \int_{junction} A  \cdot dl + \int_{loop} \nabla \varphi \cdot dl
     \\
@@ -155,10 +155,11 @@ where $\Phi_L, \Phi_R, \Phi_{C}$ are the fluxes threading the three loops in the
 \begin{figure}[H]
 \centering
 \includegraphics[scale=.5]{circuit_diagram.pdf}
+\caption{the $L$ should be $\tilde{L}$}
 \end{figure}
 
 \begin{align}
-    I_1 L - I_3 \ell + \phi_{Lx} = \Phi_{L} = \phi_1
+    I_1 \tilde{L} - I_3 \ell + \phi_{Lx} = \Phi_{L} = \phi_1
     \\
     I_2 L + I_4 \ell + \phi_{Rx} = \Phi_{R} = -\phi_2
     \\
@@ -176,7 +177,7 @@ Now that we have the circuit equations, all thats left is algebra. It is importa
 We now eliminate the current terms by using the loop equations. Note that we can solve for $I_3+I_4$ by subtracting the first two loop equations because $I_2 - I_1 = I_3+I_4$. Combining the first tow loop equations yields:
 
 \begin{align}
-    I_3 + I_4 = \frac{1}{\ell+L}\left(- \Phi_1 - \Phi_2 - \phi_{Rx} + \phi_{Lx} \right)
+    I_3 + I_4 = \frac{1}{\ell+\tilde{L}}\left(- \Phi_1 - \Phi_2 - \phi_{Rx} + \phi_{Lx} \right)
     \\
     I_4 - I_3 =\frac{1}{\ell}\left( -\phi_2 + \phi_1 +\phi_{xdc}\right)
     \end{align}
@@ -185,7 +186,7 @@ We now eliminate the current terms by using the loop equations. Note that we can
 lets define $\phi = \frac{1}{2}\left(\phi_1 + \phi_2\right)$ and $\phi_{dc} = \phi_2 - \phi_1$. We alos set $\phi_{Rx} = -\phi_{Lx}$ and call the difference $2\phi_{x}$.
 
 \begin{align}
-    I_3 + I_4 = \frac{2}{\ell+L}\left(\phi_x - \phi \right)
+    I_3 + I_4 = \frac{2}{\ell+\tilde{L}}\left(\phi_x - \phi \right)
     \\
     I_4 - I_3 =\frac{1}{\ell}\left(\phi_{xdc} - \phi_{dc} \right)
     \end{align}
@@ -194,11 +195,11 @@ Finally, we substitute into the junction equations to get:
 
 
 \begin{align}
-    C \ddot{\phi} = \frac{2}{\ell+L}\left( \phi_x - \phi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+    C \ddot{\phi} = \frac{2}{\ell+\tilde{L}}\left( \phi_x - \phi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
     \\
     \frac{C}{2} \ddot{\phi}_{dc}= \frac{1}{\ell}\left( \phi_{xdc} -\phi_{dc}\right) +I_{c1} \sin\theta_1 - I_{c2} \sin \theta_2
     \end{align}
-With some new defitions of the constants from the PRR: $L\to 2L-\ell$ and $\ell \to \frac{L}{2\gamma}$ we have:
+With some new defitions of the constants from the PRR: $\tilde{L}\to 2L-\ell$ and $\ell \to \frac{L}{2\gamma}$ we have:
 
 \begin{align}
     C \ddot{\phi} = \frac{1}{L}\left( \phi_x - \phi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
@@ -208,7 +209,7 @@ With some new defitions of the constants from the PRR: $L\to 2L-\ell$ and $\ell 
 
 
 
-We can also relate the $\theta_i$ to $\varphi,\varphi_{dc}$ by $\theta_1 = \varphi - \frac{1}{2}\varphi_{dc} $ and $\theta_2 = \varphi + \frac{1}{2}\varphi_{dc} $. We will also introduce $I_{\pm} \equiv I_{c2} \pm I_{c1}$.  This yields:
+We can also relate the $\theta_i$ to $\varphi,\varphi_{dc}$(dimensionless versions of $\phi,\phi_{dc}$) by $\theta_1 = \varphi - \frac{1}{2}\varphi_{dc} $ and $\theta_2 = \varphi + \frac{1}{2}\varphi_{dc} $. We will also introduce $I_{\pm} \equiv I_{c2} \pm I_{c1}$.  This yields:
 
 \begin{align}
     C \ddot{\phi} &= \frac{1}{L}\left( \phi_x - \phi \right) - 
@@ -237,7 +238,7 @@ C \ddot{\phi} = \lambda \dot{\phi} - \partial_\phi U(\phi, \phi_{dc})
 \frac{C}{4} \ddot{\phi}_{dc} = \lambda_{dc} \dot{\phi}_{dc} - \partial_{\phi_{dc}} U(\phi, \phi_{dc})
 \end{align}
 
-revealing the connection between the equations of motion above and the damping term in a Langevin equation. Thus, when simulating this circuit with thermal fluctuations, I use langevin dynamics. An equation of the form below:
+revealing the connection between the equations of motion above and the damping term in a Langevin equation. Thus, when simulating this circuit with thermal fluctuations, we use langevin dynamics. An equation of the form below:
 
 \[ m d \dot{\phi} = \lambda \dot{\phi} dt - \partial_\phi U(\phi, \phi_{dc}) dt + r(t) \sqrt{2 k_B T \lambda dt} \]
 
@@ -287,7 +288,7 @@ The potential given in the simulations is the one with the $\pi$-shifted definit
 
 \section{ RF-RF coupling}
 
-Imagine two identical devices, each with it's own set of variables denoted from eachother with primes ($I_1'$, for example being the current in the second device along the same section as $I_1$ is in the first device). The absolute simplest coupling I can imagine is to couple the "rf" squid sections together with mutual inductances, $M, M`$. This changed our equations very little. The junction and fluxoid qunatization equations will not be changed at all, we still have equations, for example, the equations
+Imagine two identical devices, each with it's own set of variables denoted from eachother with primes ($I_1'$, for example being the current in the second device along the same section as $I_1$ is in the first device). The absolute simplest coupling I can imagine is to couple the "rf" squid sections together with mutual inductances, $M, M'$. This changed our equations very little. The junction and fluxoid qunatization equations will not be changed at all, we still have equations, for example, the equations
 
 \begin{align}
     I_3 = I_{c_1} \sin \theta_1 + \frac{C}{2} \ddot{\Phi}_1 + \frac{1}{R} \dot{\Phi}_1
@@ -297,21 +298,21 @@ Imagine two identical devices, each with it's own set of variables denoted from 
 Again, we are going to supress the dissipative terms for now-- to simplify the algebra. Of course, note that we now have 2 sets of these: one for the original device and one for the "primed" one.  The flux threading each subloop loop will, however, see the addition of the mutual inductances between the two devices:
 
 \begin{align}
-    MI_1' + I_1 L - I_3 \ell + \phi_{Lx} = \Phi_{L} = \phi_1
+    MI_1' + I_1 \tilde{L} - I_3 \ell + \phi_{Lx} = \Phi_{L} = \phi_1
     \\
-    MI_2' + I_2 L + I_4 \ell + \phi_{Rx} = \Phi_{R} = -\phi_2
+    MI_2' + I_2 \tilde{L} + I_4 \ell + \phi_{Rx} = \Phi_{R} = -\phi_2
     \\
     I_3 \ell - I_4 \ell + \phi_{xdc} = \Phi_{C} = -(\phi_1 - \phi_2)
 \end{align} 
 
 We will have an analogous set of these for the primed device, where the mutual inductance $M'$ is coupled to the unprimed currents $I_1, I_2$. This coupling is particularly simple because of the symmetry between the two devices. It is straightforward to see how the same definitions of $\phi,\phi_{dc}$ (and $\phi',\phi_{dc}'$) Will lead to the following equation of motion for $\phi,\phi'$. Namely, when we solve for $I_3+I_4$ in each circuit using the equations above-- we get:
 
-\[ I_3 + I_4 = \frac{2}{\ell+L}\left(\phi_x - \phi \right) - \frac{M}{\ell+L} (I_3'+I_4') \]
+\[ I_3 + I_4 = \frac{2}{\ell+\tilde{L}}\left(\phi_x - \phi \right) - \frac{M}{\ell+\tilde{L}} (I_3'+I_4') \]
 
 Which, when plugged into the junction equations, gives us:
 
 \begin{multline}
-    C \ddot{\phi} = \frac{2}{\ell+L}\left( \phi_x - \phi \right) - \frac{M}{\ell+L} (I_3'+I_4') \\ - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+    C \ddot{\phi} = \frac{2}{\ell+\tilde{L}}\left( \phi_x - \phi \right) - \frac{M}{\ell+\tilde{L}} (I_3'+I_4') \\ - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
 \end{multline}
 
 (note that the $\phi_{dc}$ EOM is unchanged when compared to the uncoupled devices):
@@ -319,7 +320,7 @@ Which, when plugged into the junction equations, gives us:
 Remembering that we have another set of equation where the primes and unprimes are switched, we can substitute the primed versions of the junction equations into the EOM above:
 
 \begin{multline}
-    C \ddot{\phi} = \frac{1}{\ell+L}\left( \phi_x - \phi \right) \\ - \frac{M}{\ell+L} ( C\ddot{\phi}' + I_{c1}\sin \theta_1' + I_{c2} \sin \theta_2') \\ - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+    C \ddot{\phi} = \frac{1}{\ell+\tilde{L}}\left( \phi_x - \phi \right) \\ - \frac{M}{\ell+\tilde{L}} ( C\ddot{\phi}' + I_{c1}\sin \theta_1' + I_{c2} \sin \theta_2') \\ - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
 \end{multline}
 
 This can be rearragned so that we have (note the reintroduction of $I_{\pm}$ as well as $L\to 2L-\ell$ and the definition $\mu\equiv \frac{M}{2L}$)
