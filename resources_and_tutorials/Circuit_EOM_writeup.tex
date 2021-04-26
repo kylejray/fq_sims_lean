@@ -47,6 +47,8 @@
 \def\dd{\text{d}}
 \def\at#1{\Big{|}_{#1}}
 
+\def \df#1{\hat{#1}}
+
 \graphicspath{{./img/}}
 \begin{document} 
 
@@ -67,12 +69,15 @@ $\psi = \sqrt{\rho} e^{i\varphi}$. Here, we have considered that a large number 
 When we consider two superconductors "weakly linked" by a thin dialectric barrier, we can sort of treat them as a a single superconductor because $\varphi$ in one of the superconductors is not independent of the phase in the other). We assume each superconductor has a macroscoping wavefunction $\psi_{1,2} = \sqrt{\rho_{1,2}} e^{i\varphi_{1,2}}$ and write the hamiltonian over base states representing a particle in one superconductor or the other: $H =E_1 \ket{1}\bra{1} + E_2 \ket{2}\bra{2} + K \ket{1}\bra{2} + K \ket{2}\bra{1}$. A state vector in this basis is given by: $\ket{\psi} = \psi_1 \ket{1} + \psi_2\ket{2}$.  Setting $E_1 - E_2 = 2eV$, and using the shrodinger equation leads us to the josephson equations (I can expand on this if anyone is interested) for a junction where the potential across the junction is $V$:
 
 \begin{align}
-    I = I_{c_1} \sin \varphi
+\label{jj_eq1}
+    I = I_{c_1} \sin \varphi^*
     \\
-    \partial_t \varphi = \frac{2\pi V}{\Phi_0}
+\label{jj_eq2}
+    \partial_t \varphi^* = \frac{2\pi V}{\Phi_0}
 \end{align}
-where $\varphi = \phi_2 - \phi_1$
+where $\varphi^* = \varphi_2 - \varphi_1$ and $\Phi_0$ is the flux quantum. When considering magnetic field effects, you must transform the expression above to be gauge invariant by 
 
+\[ \varphi^* \to \varphi_J = \varphi^* -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl \]
 
 
 \subsection{Fluxoid quantization}
@@ -83,15 +88,15 @@ Lets start by plugging the macroscopic wavefunction into the equation for the cu
 
 which can be solved for the spatial derivative of the phase:
 
-\[ \nabla \varphi = \frac{2\pi}{\Phi_0} \left( A + \alpha J \right) \]
+\[ \nabla \varphi = \frac{2\pi}{\Phi_0}  A + \alpha J  \]
 
 
-First, we introduce a gauge invariant variable $\varphi_J$ for the phase difference $\varphi$ by integrating across the junction and subtracting off the part that depends the vector potential:
+First, we can get the gauge invariant variable $\varphi_J$ for the phase difference $\varphi$ by integrating across the junction and subtracting off the part that depends the vector potential ($\alpha$ is defined by context):
 
 \begin{align}
     \varphi_J = \int_{junction} \nabla \varphi \cdot dl -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl
     \\
-    = \phi -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl
+    = \varphi^* -  \frac{2\pi}{\Phi_0} \int_{junction} A \cdot dl
 \end{align}
 
 If we imagine a superconducting loop with a JJ interrupting it-- we can integrate around the loop to incorporate the phase chage across the junction into a quantization condition. Integrating around the whole loop gives
@@ -101,122 +106,123 @@ If we imagine a superconducting loop with a JJ interrupting it-- we can integrat
 \begin{figure}[H]
     \centering
     \includegraphics[scale=.5]{JJ_loop.pdf}
+    \caption{ "loop" should be "wire"}
     \end{figure}
 
-The above somes from a single-valuedness condition. If we integrate around the whole loop we should com back to where we started-- which means that wavefunction must have changed pahse by a multiple of $2\pi$. Now, we can also decompose the integral into parts that are across the junction and parts that are in the superconducting loop:
+The above somes from a single-valuedness condition. If we integrate around the whole loop we should com back to where we started-- which means that wavefunction must have changed phase by a multiple of $2\pi$. Now, we can also decompose the integral into parts that are across the junction and parts that are in the superconducting wire:
 
 
 \begin{align}
-    2\pi n &= \phi + \int_{loop} \nabla \varphi \cdot dl
+    2\pi n &= \varphi^* + \int_{wire} \nabla \varphi \cdot dl
     \\
-    &= \varphi_J +  \frac{2\pi}{\Phi_0} \int_{junction} A  \cdot dl + \int_{loop} \nabla \varphi \cdot dl
+    &= \varphi_J +  \frac{2\pi}{\Phi_0} \int_{junction} A  \cdot dl + \int_{wire} \nabla \varphi \cdot dl
     \\
-    &= \varphi_J +  \frac{2\pi}{\Phi_0} \oint A  \cdot dl + \int_{loop} \alpha J  \cdot dl
+    &= \varphi_J +  \frac{2\pi}{\Phi_0} \oint A  \cdot dl + \int_{wire} \alpha J  \cdot dl
 \end{align}
 where, the the last step, we have separated out the parts of the integration that depend on the vector potential and the parts that depend on the supercurrent density. Now, the integral in the superconducting loop can be taken to be zero as long as we can find a path where we travel inside of the penetration depth of the supercurrent (generally seems to be accepted as viable unless the superconducting wire is ultra thin). The vector potential term is nothing other than the magnetic flux threading the superconducting loop-- recognizing that $B = \nabla \times A$ and using green's theorem. This gives us the "fluxoid quantization condition":
 
-\[ \varphi_j = 2\pi n - \frac{2\pi}{\Phi_0} \Phi \]
+\[ \varphi_J = 2\pi n - \frac{2\pi}{\Phi_0} \Phi \]
 
 that relates the phase change inside of a JJ in a superconducting loop to the magnetic flux $\Phi$ that threads the loop. This can be extended to multiple junctions in the loop
 
-\[ \sum_i \varphi_{j_i} = 2\pi n - \frac{2\pi}{\Phi_0} \Phi \]
+\[ \sum_i \varphi_{J_i} = 2\pi n - \frac{2\pi}{\Phi_0} \Phi \]
 
 
 \section{The EOM for the single DC/RF squid combo}
 
 Using the tried and true method of finding circuit EOM, we will write out a bunch of equations and then solve them so find how manty degrees of freedom we have. The advantage of this is that it is straightforward, and easily interpreted. The downside is that as the circuit complexity grows, the degrees of freedom become more complicated.
 
-A couple of important notes on the conventions I am going to use. First, it is useful to introduce dimensionless/dimensionful versions of phases/fluxes; that are related as: $ \theta_i \equiv \frac{2\pi}{\Phi_0} \phi_i  $ where $\Phi_0$ is the flux quantum. Similarly, when dealing with linear combinations of the physical phases, we can define $\varphi \equiv \frac{2\pi}{\Phi_0} \phi$. This brings simplicity to the equations at the cost of having to remember that two variables relate to the same degree of freedom, and that $\fpderiv{\varphi_i} {\phi_i} = \frac{2\pi}{\Phi_0}$.
+A few important notes on the conventions I am going to use. First, it is useful to introduce dimensionless/dimensionful versions of phases/fluxes; that are related as: $ \df \theta \equiv  \frac{\Phi_0}{2\pi} \theta  $ where $\Phi_0$ is the flux quantum and $\theta$ is a dimensionless phase difference. This brings simplicity to the equations at the cost of having to remember that two variables relate to the same degree of freedom, and that $ \partial_{\df \theta} {\theta} = \frac{2\pi}{\Phi_0}$. An $``x"$ subscript on a variable denotes the externally applied fluxes that are typically thought of as our control parameters. It is important to conceptually distinguish $\df\theta$, for example, which would be the scaled version of the JJ phase difference $\theta$ with units of magnetic flux and  $\df\varphi_{xL}$ which would be an externally applied flux that has a dimensionless scaled version $\varphi_{xL}$. Finally, upper case $\Phi$ variables will refer to quantities that are proper magnetic fluxes for which we will not be interested in dimensionless versions.
 
 
 For the DC/RF combo SQUID that was used in previous experiemnts (based off of the work done by Siyuan Han in the late 80s/early 90s), the process of finding the EOM is as follows:
 
-First, we take the RSJ model for the JJ elements and write the currents passing through them-- Kirchoffs junction equations. (note the terms proportional to time derivatives of $\phi$ come from the second josephson equation $\partial_t \varphi = \frac{2\pi V}{\Phi_0}$ ):
+First, we take the RSJ model for the JJ elements and write the currents passing through them-- Kirchoffs junction equations. (note the terms proportional to time derivatives of $\df \theta$ come from the second josephson equation $\partial_t \df \theta_i =  V_i $ ):
 
 \begin{align}
-    I_3 = I_{c_1} \sin \theta_1 + \frac{C}{2} \ddot{\phi}_1 + \frac{1}{R} \dot{\phi}_1
+    I_3 = I_{c_1} \sin \theta_1 + \frac{C}{2} \ddot{\df \theta}_1 + \frac{1}{R} \dot{ \df \theta }_1
     \\ 
-    I_4 = I_{c_2} \sin \theta_2 + \frac{C}{2} \ddot{\phi}_2 + \frac{1}{R} \dot{\phi}_2
+    I_4 = I_{c_2} \sin \theta_2 + \frac{C}{2} \ddot{\df \theta}_2 + \frac{1}{R} \dot{ \df \theta}_2
     \end{align}
 From here on out, we are going to supress the dissipative term proportional to $R$-- as it will just travel around with the capacitive term. We will just remeber that each "acceleration" term is going to come with a dissipative term proportional to $\frac{1}{R}$.
 
 Now, we will relate the fluxes threading the different loops to the phases across each JJ using fluxoid quantization:
 
 \begin{align}
-     n\Phi_0 - \Phi_L = -\phi_1
+     n_L\Phi_0 - \Phi_L = -\df\theta_1
     \\ 
-    n \Phi_0 -  \Phi_R = \phi_2
+    n_R \Phi_0 -  \Phi_R = \df\theta_2
     \\
-    n \Phi_0 - \Phi_{C} = \phi_1  - \phi_2
+    n_C \Phi_0 - \Phi_{C} = \df\theta_1  - \df\theta_2
 \end{align}
 
-where $\Phi_L, \Phi_R, \Phi_{C}$ are the fluxes threading the three loops in the circuit diagram. We choose our $n=0$. Meanwhile, these fluxes are given by:
+where $\Phi_L, \Phi_R, \Phi_{C}$ are the fluxes threading the three loops in the circuit diagram. We choose all $n=0$. This conceptually represents something like a ground state assumption, but I do not think any of the arguments in this writeup depend on this choice. To see this, note that the way an integral multiple of $2\pi$ enters Eq. \ref{jj_eq1} and \ref{jj_eq2} yileds them invariant to $n$. Meanwhile, the total fluxes are given by the sum of all sources of fluxes in the corresponding loop: namely the self inductances and external fluxes.
 
 \begin{figure}[H]
 \centering
 \includegraphics[scale=.5]{circuit_diagram.pdf}
-\caption{the $L$ should be $\tilde{L}$}
+\caption{I have made notation changes not reflected in the diagram. $L \to \tilde{L}; \phi_{xL} \to \df\varphi_{xL}; \phi_{xR} \to \df\varphi_{xR};  \phi_{xdc} \to \df\varphi_{xdc}  $
+}
 \end{figure}
 
 \begin{align}
-    I_1 \tilde{L} - I_3 \ell + \phi_{Lx} = \Phi_{L} = \phi_1
+    I_1 \tilde{L} - I_3 \ell + \df\varphi_{xL} = \Phi_{L} = \df\theta_1
     \\
-    I_2 L + I_4 \ell + \phi_{Rx} = \Phi_{R} = -\phi_2
+    I_2 \tilde{L} + I_4 \ell + \df\varphi_{xR} = \Phi_{R} = -\df\theta_2
     \\
-    I_3 \ell - I_4 \ell + \phi_{xdc} = \Phi_{C} = -(\phi_1 - \phi_2)
+    I_3 \ell - I_4 \ell + \df\varphi_{xdc} = \Phi_{C} = -(\df\theta_1 - \df\theta_2)
 \end{align} 
 
 Now that we have the circuit equations, all thats left is algebra. It is important to note that we have defined 4 currents, but we actually have a relationship betweem them ($I_2 = I_1 + I_3 + I_4$) which suggests 3 variables should do the trick. With foresight towards where we want to end up, lets take some linear combinations of our junction equations:
 
 \begin{align}
-\frac{C}{2} (\ddot{\phi}_1 + \ddot{\phi}_2 ) = (I_3 + I_4) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+\frac{C}{2} (\ddot{\df\theta}_1 + \ddot{\df\theta}_2 ) = (I_3 + I_4) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
 \\
-\frac{C}{2} (\ddot{\phi}_2 - \ddot{\phi}_1 ) = (I_4 - I_3) +I_{c1} \sin\theta_1 - I_{c2} \sin \theta_2
+\frac{C}{2} (\ddot{\df\theta}_2 - \ddot{\df\theta}_1 ) = (I_4 - I_3) +I_{c1} \sin\theta_1 - I_{c2} \sin \theta_2
 \end{align}
 
 We now eliminate the current terms by using the loop equations. Note that we can solve for $I_3+I_4$ by subtracting the first two loop equations because $I_2 - I_1 = I_3+I_4$. Combining the first tow loop equations yields:
 
 \begin{align}
-    I_3 + I_4 = \frac{1}{\ell+\tilde{L}}\left(- \Phi_1 - \Phi_2 - \phi_{Rx} + \phi_{Lx} \right)
+    I_3 + I_4 = \frac{1}{\ell+\tilde{L}}\left(- \df\theta_1 - \df\theta_2 - \df\varphi_{xR} + \df\varphi_{xL} \right)
     \\
-    I_4 - I_3 =\frac{1}{\ell}\left( -\phi_2 + \phi_1 +\phi_{xdc}\right)
+    I_4 - I_3 =\frac{1}{\ell}\left( -\df\theta_2 + \df\theta_1 +\df\varphi_{xdc}\right)
     \end{align}
 
 
-lets define $\phi = \frac{1}{2}\left(\phi_1 + \phi_2\right)$ and $\phi_{dc} = \phi_2 - \phi_1$. We alos set $\phi_{Rx} = -\phi_{Lx}$ and call the difference $2\phi_{x}$.
+lets define $\df\varphi = \frac{1}{2}\left(\df\theta_1 + \df\theta_2\right)$ and $\df\varphi_{dc} = \df\theta_2 - \df\theta_1$ (equivalently we can think of defining the corresponding $\varphi$, and $\varphi_{dc}$ in terms of $\theta_1,\text{and } \theta_2$). Note, if we had chosen to set any of $n_L,n_R,n_C$ equal to anything other than zero, you would absorb them into these definitions, and then we don't worry about them anymore. We also set $\df\varphi_{xL} = -\df\varphi_{xR} = \df\varphi_x$, since we have the freedom to set our external fluxes to be whatever we want.
 
 \begin{align}
-    I_3 + I_4 = \frac{2}{\ell+\tilde{L}}\left(\phi_x - \phi \right)
+    I_3 + I_4 = \frac{2}{\ell+\tilde{L}}\left(\df\varphi_x - \df\varphi \right)
     \\
-    I_4 - I_3 =\frac{1}{\ell}\left(\phi_{xdc} - \phi_{dc} \right)
+    I_4 - I_3 =\frac{1}{\ell}\left(\df\varphi_{xdc} - \df\varphi_{dc} \right)
     \end{align}
 
 Finally, we substitute into the junction equations to get:
 
 
 \begin{align}
-    C \ddot{\phi} = \frac{2}{\ell+\tilde{L}}\left( \phi_x - \phi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+    C \ddot{\df\varphi} = \frac{2}{\ell+\tilde{L}}\left( \df\varphi_x - \df\varphi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
     \\
-    \frac{C}{2} \ddot{\phi}_{dc}= \frac{1}{\ell}\left( \phi_{xdc} -\phi_{dc}\right) +I_{c1} \sin\theta_1 - I_{c2} \sin \theta_2
+    \frac{C}{2} \ddot{\df\varphi}_{dc}= \frac{1}{\ell}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) +I_{c1} \sin\theta_1 - I_{c2} \sin \theta_2
     \end{align}
-With some new defitions of the constants from the PRR: $\tilde{L}\to 2L-\ell$ and $\ell \to \frac{L}{2\gamma}$ we have:
+With some new definitions of the constants from the PRR: $\tilde{L} = 2L-\ell$ and $\gamma = \frac{L}{2\ell}$ we have:
 
 \begin{align}
-    C \ddot{\phi} = \frac{1}{L}\left( \phi_x - \phi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+    C \ddot{\df\varphi} = \frac{1}{L}\left( \df\varphi_x - \df\varphi \right) - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
     \\
-    \frac{C}{4} \ddot{\phi}_{dc}= \frac{\gamma}{L}\left( \phi_{xdc} -\phi_{dc}\right) +\frac{1}{2}I_{c1} \sin\theta_1 - \frac{1}{2} I_{c2} \sin \theta_2
+    \frac{C}{4} \ddot{\df\varphi}_{dc}= \frac{\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) +\frac{1}{2}I_{c1} \sin\theta_1 - \frac{1}{2} I_{c2} \sin \theta_2
     \end{align}
 
 
-
-We can also relate the $\theta_i$ to $\varphi,\varphi_{dc}$(dimensionless versions of $\phi,\phi_{dc}$) by $\theta_1 = \varphi - \frac{1}{2}\varphi_{dc} $ and $\theta_2 = \varphi + \frac{1}{2}\varphi_{dc} $. We will also introduce $I_{\pm} \equiv I_{c2} \pm I_{c1}$.  This yields:
+Using the relations $\theta_1 = \varphi - \frac{1}{2}\varphi_{dc} $ and $\theta_2 = \varphi + \frac{1}{2}\varphi_{dc} $ we eliminate the $\theta_i$. We will also introduce $I_{\pm} \equiv I_{c2} \pm I_{c1}$.  This yields:
 
 \begin{align}
-    C \ddot{\phi} &= \frac{1}{L}\left( \phi_x - \phi \right) - 
+    C \ddot{\df\varphi} &= \frac{1}{L}\left( \df\varphi_x - \df\varphi \right) - 
     \\
     &I_{+} \sin \varphi \cos \frac{\varphi_{dc}}{2} - I_{-} \cos \varphi \sin \frac{\varphi_{dc}}{2}
     \\
-    \frac{C}{4} \ddot{\phi}_{dc} &= \frac{\gamma}{L}\left( \phi_{xdc} -\phi_{dc}\right) - 
+    \frac{C}{4} \ddot{\df\varphi}_{dc} &= \frac{\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) - 
     \\
     &\frac{I_{+}}{2} \cos \varphi \sin \frac{\varphi_{dc}}{2} - \frac{I_{-}}{2} \sin \varphi \cos \frac{\varphi_{dc}}{2}
 \end{align}
@@ -224,23 +230,23 @@ We can also relate the $\theta_i$ to $\varphi,\varphi_{dc}$(dimensionless versio
 If we think about the equations as being the lagrangian EQOM of the system-- we have:
 
 \begin{align}
-    C \ddot{\phi} = - \partial_\phi U(\phi, \phi_{dc})
-    \\
-    \frac{C}{4} \ddot{\phi}_{dc} = - \partial_{\phi_{dc}} U(\phi, \phi_{dc})
-    \end{align}
+C \ddot{\df\varphi} =- \partial_{\df\varphi} U(\df\varphi, \df\varphi_{dc})
+\\
+\frac{C}{4} \ddot{\df\varphi}_{dc} =  - \partial_{\df\varphi_{dc}} U(\df\varphi, \df\varphi_{dc})
+\end{align}
 
 
 Reintroducing the resistive shunt to the josephson elements, would result in term proportional to $\dot{\phi}$ or $\dot{\phi}_{dc}$, as below:
 
 \begin{align}
-C \ddot{\phi} = \lambda \dot{\phi} - \partial_\phi U(\phi, \phi_{dc})
+C \ddot{\df\varphi} = \lambda \dot{\df\varphi} - \partial_{\df\varphi} U(\df\varphi, \df\varphi_{dc})
 \\
-\frac{C}{4} \ddot{\phi}_{dc} = \lambda_{dc} \dot{\phi}_{dc} - \partial_{\phi_{dc}} U(\phi, \phi_{dc})
+\frac{C}{4} \ddot{\df\varphi}_{dc} = \lambda_{dc} \dot{\df\varphi}_{dc} - \partial_{\df\varphi_{dc}} U(\df\varphi, \df\varphi_{dc})
 \end{align}
 
 revealing the connection between the equations of motion above and the damping term in a Langevin equation. Thus, when simulating this circuit with thermal fluctuations, we use langevin dynamics. An equation of the form below:
 
-\[ m d \dot{\phi} = \lambda \dot{\phi} dt - \partial_\phi U(\phi, \phi_{dc}) dt + r(t) \sqrt{2 k_B T \lambda dt} \]
+\[ m d \dot{\df\varphi} = \lambda \dot{\df\varphi} dt - \partial_{\df\varphi} U(\df\varphi, \df\varphi_{dc}) dt + r(t) \sqrt{2 k_B T \lambda dt} \]
 
 for each dimension-- where the effective damping coefficient and mass depend on the physical parameters $R,L,C$.
 \\
@@ -248,16 +254,16 @@ for each dimension-- where the effective damping coefficient and mass depend on 
 Now, to find the exact form for the potential-- which is useful for visualization purposes. We first verify wether we can think of these functions as having come from a potential at all-- because we know that for any function $\partial_{x} \partial_{y} U(x,y) = \partial_{y} \partial_{x} U(x,y)$; we verify that
 
 \begin{align}
- \partial_{\phi_{dc}}\left[I_{+} \sin \varphi \cos \frac{\varphi_{dc}}{2} + I_{-} \cos \varphi \sin \frac{\varphi_{dc}}{2}\right]
+ \partial_{\df\varphi_{dc}}\left[I_{+} \sin \varphi \cos \frac{\varphi_{dc}}{2} + I_{-} \cos \varphi \sin \frac{\varphi_{dc}}{2}\right]
 \end{align}
 \[=\]
 \begin{align} 
-    \partial_{\phi}\left[\frac{I_{+}}{2} \cos \varphi \sin \frac{\varphi_{dc}}{2} + \frac{I_{-}}{2} \sin \varphi \cos \frac{\varphi_{dc}}{2}\right]
+    \partial_{\df\varphi}\left[\frac{I_{+}}{2} \cos \varphi \sin \frac{\varphi_{dc}}{2} + \frac{I_{-}}{2} \sin \varphi \cos \frac{\varphi_{dc}}{2}\right]
 \end{align}
 
 The above hold true, so we have a physical potential. In fact, the potential is easy enough to be found by inspection: 
 \begin{align}
-U &= \frac{1}{2L} (\phi-\phi_x)^2 + \frac{\gamma}{2L} (\phi_{dc}-\phi_{xdc})^2 + \\
+U &= \frac{1}{2L} (\df\varphi-\df\varphi_x)^2 + \frac{\gamma}{2L} (\df\varphi_{dc}-\df\varphi_{xdc})^2 + \\
  &\frac{\Phi_0}{2\pi}  \left( - I_+ \cos \varphi \cos \frac{\varphi_{dc}}{2} + I_- \sin \varphi \sin \frac{\varphi_{dc}}{2}\right)
 \end{align}
 
@@ -320,7 +326,7 @@ Which, when plugged into the junction equations, gives us:
 Remembering that we have another set of equation where the primes and unprimes are switched, we can substitute the primed versions of the junction equations into the EOM above:
 
 \begin{multline}
-    C \ddot{\phi} = \frac{1}{\ell+\tilde{L}}\left( \phi_x - \phi \right) \\ - \frac{M}{\ell+\tilde{L}} ( C\ddot{\phi}' + I_{c1}\sin \theta_1' + I_{c2} \sin \theta_2') \\ - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
+    C \ddot{\phi} = \frac{2}{\ell+\tilde{L}}\left( \phi_x - \phi \right) \\ - \frac{M}{\ell+\tilde{L}} ( C\ddot{\phi}' + I_{c1}\sin \theta_1' + I_{c2} \sin \theta_2') \\ - I_{c_1} \sin \theta_1 - I_{c_2} \sin \theta_2
 \end{multline}
 
 This can be rearragned so that we have (note the reintroduction of $I_{\pm}$ as well as $L\to 2L-\ell$ and the definition $\mu\equiv \frac{M}{2L}$)
@@ -349,7 +355,13 @@ Let's ignore the $F$ and constant part of the EOM for now, and work on diagonali
     C A \ddot{\mathbf{\phi}} = \frac{1}{L} \phi 
 }
 \end{align}
-where $A = \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors/values $(-\sqrt\frac{\mu}{\mu'}, 1)/1-\sqrt{\mu\mu'}$ and $(\sqrt\frac{\mu}{\mu'}, 1)/1+\sqrt{\mu\mu'}$. These eigenvectors are not orthogonal to each other, unless $\mu'=\mu$. We specialize to this case, which suggests new coordiantes $\eta = -\phi +\phi'$ and $\eta' = \phi+\phi'$ with associated $\eta_x = -\phi_x + \phi_x'$ and $\eta_x' = \phi_x + \phi_x'$ . The effective EOM of these composite degrees of freedom can be found by adding and subtracting the EOM above, this yields:
+where $A = \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors/values:
+
+\[  (-\sqrt\frac{\mu}{\mu'}, 1)/1-\sqrt{\mu\mu'}\]
+ and 
+ \[ (\sqrt\frac{\mu}{\mu'}, 1)/1+\sqrt{\mu\mu'}\]. 
+ 
+ These eigenvectors are not orthogonal to each other, unless $\mu'=\mu$. We specialize to this case, which suggests new coordiantes $\eta = -\phi +\phi'$ and $\eta' = \phi+\phi'$ with associated $\eta_x = -\phi_x + \phi_x'$ and $\eta_x' = \phi_x + \phi_x'$ . The effective EOM of these composite degrees of freedom can be found by adding and subtracting the EOM above, this yields:
 
 \begin{multline}
     C(1-\mu) \ddot{\eta} = \frac{1}{L} (\eta_x-\eta) - \\ F(\varphi', \varphi'_{dc}) - \mu F(\varphi,\varphi_{dc}) + F(\varphi, \varphi_{dc}) + \mu F(\varphi',\varphi_{dc}')
@@ -571,8 +583,8 @@ Reintroducing the resistive shunts, we have the following EOMs:
 \begin{align*}
     C \ddot{\eta} + \frac{2 \dot{\eta}}{R} &= -\partial_{\eta} U_0 * U' \\
     C \ddot{\eta}' + \frac{2 \dot{\eta'}}{R}  &= -\partial_{\eta'} U_0 * U' \\
-\frac{C}{2} \ddot{\phi}_{dc} + \frac{\dot{\eta'}}{R} &= -\partial_{\phi_{dc}} U_0 * U' \\
-\frac{C}{2} \ddot{\phi'}_{dc} + \frac{\dot{\eta'}}{R} &= -\partial_{\phi'_{dc}} U_0 * U'
+\frac{C}{2} \ddot{\phi}_{dc} + \frac{\dot{\phi_{dc}}}{R} &= -\partial_{\phi_{dc}} U_0 * U' \\
+\frac{C}{2} \ddot{\phi'}_{dc} + \frac{\dot{\phi'_{dc}}}{R} &= -\partial_{\phi'_{dc}} U_0 * U'
 \end{align*}
 
 We can see that the same strategy of non-dimensionalizing will work fine. In fact, we have ven written the potential in the form of $U_0 * U'$ in anticipation of the energy scale we used in the single device case. Using the same scaling factors as above, we should be able to implement a simulation using essentially the same equation as before (albeit with a different potential).
