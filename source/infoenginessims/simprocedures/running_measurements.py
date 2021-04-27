@@ -1,4 +1,4 @@
-from numpy import empty, zeros
+from numpy import empty, zeros, multiply
 
 # from infoenginessims.simprocedures.basic_simprocedures import SimProcedure
 from .basic_simprocedures import SimProcedure
@@ -17,6 +17,42 @@ def get_dW(simulation):
     dpotential = get_potential(state, time + dt) - get_potential(state, time)
 
     return dpotential
+
+def get_kinetic(simulation):
+    """Gets step change in inclusive work."""
+
+    get_KE = simulation.system.get_kinetic_energy
+    state = simulation.current_state
+
+    KE = get_KE(state)
+
+    return KE
+
+def get_potential(simulation):
+    """Gets step change in inclusive work."""
+
+    t = simulation.current_time
+    get_PE = simulation.system.get_potential
+    state = simulation.current_state
+
+    PE = get_PE(state, t)
+
+    return PE
+
+def get_EPT(simulation):
+    """Gets step change in inclusive work."""
+
+    t = simulation.current_time
+    get_force = simulation.system.get_external_force
+    state = simulation.current_state
+    F = get_force(state, t)
+
+    if simulation.system.has_velocity:
+        state = state[...,0]
+
+    
+
+    return multiply(state, -F)
 
 
 def get_dW0(simulation):
@@ -128,6 +164,23 @@ class KeepNextValue(SimProcedure):
 
         self.next_value = self.next_value + dvalue
 
+class MeasureValue(SimProcedure):
+    """Keeps the current step's next value."""
+
+    def __init__(self, get_value, output_name):
+
+        self.get_value = get_value
+        self.output_name = output_name
+
+    def do_initial_task(self, simulation):
+
+        self.simulation = simulation
+
+        self.next_value = zeros(simulation.ntrials)
+
+    def do_intermediate_task(self):
+
+        self.next_value = self.get_value(self.simulation)
 
 class MeasureFinalValue(KeepNextValue):
     """Returns the final value."""
@@ -138,6 +191,7 @@ class MeasureFinalValue(KeepNextValue):
 
 
 class MeasureAllValue(KeepNextValue):
+
     """Returns values for each step."""
 
     def do_initial_task(self, simulation):

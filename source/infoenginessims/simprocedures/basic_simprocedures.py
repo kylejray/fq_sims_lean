@@ -1,4 +1,5 @@
-from numpy import empty, s_, histogramdd
+from numpy import empty, s_, histogramdd, mean, shape
+from scipy.stats import sem
 
 
 class SimProcedure:
@@ -105,6 +106,82 @@ class MeasureAllState(SimProcedure):
     def do_final_task(self):
 
         return self.all_state
+
+class MeasureStepValue(SimProcedure):
+    """Measurement that returns a value for a subset of trials.
+
+    The trial_indices argument can take lists of indices (integer array
+    indexing), slices, and numpy index expressions.
+    """
+
+    def __init__(self, get_value, output_name='all_value', step_request=s_[:]):
+        self.get_val = get_value
+        self.output_name = output_name
+        self.step_request = step_request
+        
+
+
+    def do_initial_task(self, simulation):
+
+        self.simulation = simulation
+
+        initial_val = self.get_val(self.simulation)
+
+        val_shape = shape(initial_val)
+
+        step_indices = range(self.simulation.nsteps + 1)[self.step_request]
+
+
+        all_val_shape = [len(step_indices), *val_shape]
+
+        vals = empty(all_val_shape)
+
+        vals[0, ...] = initial_val
+
+        self.all_value = {'step_indices': step_indices,
+                          'values': vals}
+
+
+    def do_intermediate_task(self):
+
+        next_step = self.simulation.current_step + 1
+
+        try:
+
+            step_indices = self.all_value['step_indices']
+            step_index = step_indices.index(next_step)
+
+            try:
+                next_value = self.get_val(self.simulation)
+
+                vals = self.all_value['values']
+
+                vals[step_index, ...] = next_value
+
+            except ValueError:
+                print('shape fail')
+
+        
+        except ValueError:
+            pass
+        
+    def do_final_task(self):
+
+        return self.all_value
+
+class MeasureMeanValue(MeasureStepValue):
+
+    """Measurement that returns a value for a subset of trials.
+
+    The trial_indices argument can take lists of indices (integer array
+    indexing), slices, and numpy index expressions.
+    """
+    def __init__(self, get_value, output_name='all_value', step_request=s_[:]):
+        self.get_val = lambda x: [mean(get_value(x), axis=0), sem(get_value(x))] 
+        self.output_name = output_name
+        self.step_request = step_request
+
+
 
 
 class MeasureAllStateDists(SimProcedure):
