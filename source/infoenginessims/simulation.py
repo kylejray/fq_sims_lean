@@ -66,6 +66,7 @@ class Simulation:
         procedures = self.procedures
         nsteps = self.nsteps
         dt = self.dt
+        self.current_time = 0
 
         self.current_state = array(initial_state)
         self.next_state = empty(initial_state.shape)
