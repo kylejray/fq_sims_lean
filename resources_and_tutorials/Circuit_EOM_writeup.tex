@@ -354,13 +354,22 @@ This yields:
     C \left( \mu' \ddot{\df\varphi} + \ddot{\df\varphi}'\right) = \frac{1}{L} (\df\varphi'_x-\df\varphi') - F(\dl\varphi', \dl\varphi'_{dc}) - \mu' F(\dl\varphi,\dl\varphi_{dc})
 \end{align}
 
-Let's ignore the $F$ and constant part of the EOM for now, and work on diagonalizing the other part. As a vector equation, we have something like (x is a vector $x = (\df\varphi, \df\varphi')$):
+As a matrix equation, we have:
 
 \begin{align}{
-    C A \ddot{x} = \frac{1}{L} x 
+    C A \tilde{x} = \frac{1}{L} x 
 }
 \end{align}
-where $A = \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors:
+where $x = (\df\varphi, \df\varphi')$, and $\tilde{x} = ((\ddot{\df\varphi}+F(\dl\varphi, \dl\varphi_{dc}), \ddot{\df\varphi}' + F(\dl\varphi',\dl\varphi_{dc}')$.
+
+Using the standard approach, we write the equation in a new basis in which $A$ is diagonal:
+ \begin{align}
+    N^{-1} A N N^{-1}  \tilde{x} &= \frac{1}{L} N^{-1} x \\
+    \lambda \tilde{X} &= \frac{1}{L} X
+\end{align}
+where $N$ is the matrix of the eigenvectors of $A$, and our vectors in the new basis are $X,\tilde{X}$, and $\lambda$ is the digonal eigenvalue matrix
+\\ \\
+$A \equiv \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors:
 
 \begin{align} \left(-\sqrt\frac{\mu}{\mu'}, 1\right) \quad \text{and} \quad \left(\sqrt\frac{\mu}{\mu'}, 1\right) \end{align}
  
@@ -368,56 +377,60 @@ where $A = \begin{pmatrix} 1 & \mu \\ \mu' & 1 \end{pmatrix}  $ has eigenvectors
  
  \begin{align} 1-\sqrt{\mu\mu'} \quad \text{and} \quad 1+\sqrt{\mu\mu'} \end{align} 
  
+ Normalizing the eigenvectors and Solving for $N^{-1}$ gives us the elements of our new basis $X = (\df\eta, \df\zeta)$. In terms of the old coordinates:
  
- 
- These eigenvectors are not orthogonal to each other, unless $\mu'=\mu$. We specialize to this case, which suggests new coordiantes $\df\eta = -\df\varphi + \df\varphi'$ and $\df\eta' = \df\varphi+\df\varphi'$ with associated $\dl\df\eta_x = -\dl\varphi_x + \dl\varphi_x'$ and $\df\eta_x' = \df\varphi_x + \df\varphi_x'$ . The effective EOM of these composite degrees of freedom can be found by adding and subtracting the EOM above, this yields:
+ \begin{align}
+ &\df\eta = \frac{a}{2} \left( - \sqrt\frac{\mu'}{\mu} \df\varphi + \df\varphi' \right)
+ &\df\zeta = \frac{a}{2} \left( \sqrt\frac{\mu'}{\mu} \df\varphi + \df\varphi' \right)
+ \end{align}
+where $a \equiv \sqrt{1+\frac{m}{m'}} $ is a normalization factor. We also $\dl\df\eta_x$ and $\df\zeta_x$ defined the same way in terms of $\df\varphi_x, \df\varphi_x'$  . Going back to our non-matrix notation: the effective EOM of these composite degrees of freedom are
+
+\begin{align}
+    &C(1-\sqrt{\mu'\mu}) \left[ \ddot{\df\eta} - \frac{a}{2}\left(  \sqrt\frac{\mu'}{\mu}  F(\dl\varphi, \dl\varphi_{dc}) + F(\dl\varphi', \dl\varphi'_{dc})\right)\right] = \frac{1}{L} (\df\eta_x-\df\eta) \\ 
+    &C(1+\sqrt{\mu'\mu})\left[  \ddot{\df\eta}' + \frac{a}{2}\left(  \sqrt\frac{\mu'}{\mu}  F(\dl\varphi, \dl\varphi_{dc}) + F(\dl\varphi', \dl\varphi'_{dc})\right)\right] = \frac{1}{L} (\df\zeta_x-\df\zeta) 
+\end{align}
+
+
+Let's simplify the above a little:
 
 \begin{multline}
-    C(1-\mu) \ddot{\df\eta} = \frac{1}{L} (\df\eta_x-\df\eta) - \\ F(\dl\varphi', \dl\varphi'_{dc}) - \mu F(\dl\varphi,\dl\varphi_{dc}) + F(\dl\varphi, \dl\varphi_{dc}) + \mu F(\dl\varphi',\dl\varphi_{dc}')
+    C \ddot{\df\eta} = \frac{1}{L(1-\sqrt{\mu\mu'})} (\df\eta_x-\df\eta) + \frac{a}{2}  \sqrt\frac{\mu'}{\mu} F(\dl\varphi, \dl\varphi_{dc}) - \frac{a}{2} F(\dl\varphi', \dl\varphi'_{dc})
 \end{multline}
     \\
 \begin{multline}
-    C(1+\mu) \ddot{\df\eta}' = \frac{1}{L} (\df\eta'_x-\df\eta') - \\ F(\dl\varphi', \dl\varphi'_{dc}) - \mu F(\dl\varphi,\dl\varphi_{dc}) - F(\dl\varphi, \dl\varphi_{dc}) - \mu F(\dl\varphi',\dl\varphi_{dc}')
-\end{multline}
-
-All of the coordiantes are linear combinations and/or scaled versions of each other. Let's simplify the above a little: 
-
-\begin{multline}
-    C \ddot{\df\eta} = \frac{1}{L(1-\mu)} (\df\eta_x-\df\eta) + F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})
-\end{multline}
-    \\
-\begin{multline}
-    C \ddot{\df\eta}' = \frac{1}{L(1+\mu)} (\df\eta'_x-\df\eta') - F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})
+    C \ddot{\df\zeta} = \frac{1}{L(1+\sqrt{\mu\mu'})} (\df\zeta_x-\df\zeta) - \frac{a}{2}  \sqrt\frac{\mu'}{\mu} F(\dl\varphi, \dl\varphi_{dc}) - \frac{a}{2} F(\dl\varphi', \dl\varphi'_{dc})
 \end{multline}
 
 Again, we are interested in wether we can express the RHS of all of these EOM as the gradient of some potential function. We can check wether these force terms come from a potential energy function by checking if the following is true:
 
 \begin{align}
- \partial_{\df\eta'} \left( F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})\right) =  \\
- \partial_{\df\eta} \left( -F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})\right) 
+ \partial_{\df\zeta} \left(  \sqrt\frac{\mu'}{\mu} F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})\right) =  \\
+ \partial_{\df\eta} \left( -   \sqrt\frac{\mu'}{\mu}F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})\right) 
  \end{align}
 
 
-For the dimensionless variables,  we have: $\dl\varphi = \frac{1}{2} (-\dl\eta+\dl\eta')$ and $\dl\varphi' = \frac{1}{2} (\dl\eta+\dl\eta')$. This will allow us to check the relation above easily by noting that each of the four terms above will result in a string of partial derivatives like the one below
+For the dimensionless variables,  we have: $\dl\varphi =\frac{1}{a}  \sqrt\frac{\mu}{\mu'}  (-\dl\eta+\dl\zeta)$ and $\dl\varphi' =\frac{1}{a} (\dl\eta+\dl\zeta)$. This will allow us to check the relation above easily by noting that each of the four terms above will result in a string of partial derivatives like the one below
 
-\[ \frac{\partial F(\dl\varphi,\dl\varphi_{dc})}{\partial \df\eta'}  =\frac{\partial \dl\eta'}{\partial \df\eta'} \frac{\partial \dl\varphi}{\partial \dl\eta'} \frac{\partial F}{\partial \dl\varphi} \]
+\[ \frac{\partial F(\dl\varphi,\dl\varphi_{dc})}{\partial \df\zeta}  =\frac{\partial \dl\zeta}{\partial \df\zeta} \frac{\partial \dl\varphi}{\partial \dl\zeta} \frac{\partial F}{\partial \dl\varphi} \]
 
-will always take a similar form for every term. The first derivative will be common among all terms ($\frac{2\pi}{\Phi_0}$), and the second will be either $\pm \frac{1}{2}$ depending on if we are talking about primed or unprimed $\dl\varphi$ and $\dl\eta$. Notating $f(x,y)$ as the derivative $\partial_x F(x,y)$ The result is:
+will always take a similar form for every term. The first derivative will be common among all terms ($\frac{2\pi}{\Phi_0}$), and the second will be have a common factor $\frac{1}{a}$ multiplied by either $\pm 1$ or $\pm \sqrt\frac{\mu}{\mu'}$ depending on if we are talking about primed or unprimed $\dl\varphi$ and $\dl\eta$ or $\dl\zeta$. Notating $f(x,y)$ as the derivative $\partial_x F(x,y)$ The result is:
 
-\[ \frac{1}{2} f(\dl\varphi, \dl\varphi_{dc}) - \frac{1}{2} f(\dl\varphi', \dl\varphi'_{dc}) = - \left(-\frac{1}{2}\right) f(\dl\varphi, \dl\varphi_{dc}) - \frac{1}{2} f(\dl\varphi', \dl\varphi'_{dc})\]
+\[ f(\dl\varphi, \dl\varphi_{dc}) -  f(\dl\varphi', \dl\varphi'_{dc}) = - \left(-1\right) f(\dl\varphi, \dl\varphi_{dc}) - f(\dl\varphi', \dl\varphi'_{dc})\]
 
 Which suggests we might be abel to find a proper potential. If we want to consider the case where $\gamma$ is large, and the $dc$ coordinates stay close to the external fluxes-- then this is good enough. However, if we are goig to simulate the full dynamics including the $dc$ coordinates, we have some more work to do.
 
 The EOM for $\df\varphi_{dc}$ and $\df\varphi_{dc}'$ are unchanged by the coupling. If we translate them into our current notation, we have:
 \begin{align}
-\frac{C}{2} \ddot{\df\varphi}_{dc} &= \frac{2\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) -  F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \\
-\frac{C}{2} \ddot{\df\varphi'}_{dc} &= \frac{2\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi'_{dc}\right) -  F(\frac{\dl\varphi'_{dc}}{2}, 2\dl\varphi')
+\frac{C}{4} \ddot{\df\varphi}_{dc} &= \frac{\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) -  \frac{1}{2} F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \\
+\frac{C}{4} \ddot{\df\varphi'}_{dc} &= \frac{\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi'_{dc}\right) -  \frac{1}{2}F(\frac{\dl\varphi'_{dc}}{2}, 2\dl\varphi')
 \end{align}
 
 And, we would like to know if the RHS can be considered as more derivatives of the same potential function as above. It will be useful to define, $g(x,y) = \partial_{y} F(x,y)$ note that
 
-\[ g(x,y) = \frac{1}{2} \left( -I_{+} \sin x \sin \frac{y}{2} + I_{-} \cos x \cos \frac{y}{2} \right) \]
-\[ = g(\frac{y}{2}, 2x) \]
+\begin{align} 
+g(x,y) &= \frac{1}{2} \left( -I_{+} \sin x \sin \frac{y}{2} + I_{-} \cos x \cos \frac{y}{2} \right) \\
+ &= g(\frac{y}{2}, 2x)
+\end{align}
 
 Now, we must check several conditions similar to that above making sure the full fisher matrix is symmetric. Let's start with
 
@@ -426,86 +439,98 @@ Now, we must check several conditions similar to that above making sure the full
 Neglecting terms that are trivialy zero:
 
 
-\[ \partial_{\df\varphi_{dc}} F(\dl\varphi, \dl\varphi_{dc})  = - \partial_{\df\eta}  F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi)\]
+\[ \partial_{\df\varphi_{dc}} \frac{a}{2} \sqrt\frac{\mu'}{\mu} F(\dl\varphi, \dl\varphi_{dc})  = - \partial_{\df\eta} \frac{1}{2}  F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi)\]
 
-\[ \iff \fpderiv{\dl\varphi_{dc}} {\df\varphi_{dc}} g(\dl\varphi,\dl\varphi_{dc})  = -    \fpderiv{\dl\eta} {\df\eta} \fpderiv{2\dl\varphi} {\dl\eta} \partial_{2\dl\varphi} F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \]
+\[ \iff \frac{a}{2} \sqrt\frac{\mu'}{\mu} \fpderiv{\dl\varphi_{dc}} {\df\varphi_{dc}} g(\dl\varphi,\dl\varphi_{dc})  = -    \fpderiv{\dl\eta} {\df\eta} \fpderiv{\dl\varphi} {\dl\eta} \partial_{2\dl\varphi} F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \]
 
-\[ \iff  g(\dl\varphi,\dl\varphi_{dc})  = - (-1) g(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \]
+\[ \iff \frac{a}{2} \sqrt\frac{\mu'}{\mu}  g(\dl\varphi,\dl\varphi_{dc})  = - \left(-\frac{1}{a} \sqrt\frac{\mu}{\mu'}\right)) g(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \]
 
-\[ \iff  g(\dl\varphi,\dl\varphi_{dc})  =  g(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \]
+The relation we derived for $g$ shows that the two functions are identical, so 
+\[ \iff \frac{a}{2} \sqrt\frac{\mu'}{\mu}   = \frac{1}{a} \sqrt\frac{\mu}{\mu'} \]
 
-So, indeed, it does check out. We can use the same method to argue the rest also work out-- though I think it might be a little over the top to write each case down here.
+The relation above is equivalent to the condition $\mu'=\mu$, so we choose a symmetric device. Note that this could be remedied by choosing a scaled version of the $\dl\varphi_{dc}$ coordinates that also depend on the mutual inductances-- but let's stick with the symmetric assumption for now. We can use the same method to argue the rest also work out-- though I think it might be a little over the top to write each case down here.
+
+Note that choosing a symmetric device reduces our coordinates to:
+
+\begin{align}
+ &\dl\varphi =\frac{1}{\sqrt{2}} (-\dl\eta+\dl\zeta) &\dl\varphi' =\frac{1}{\sqrt{2}} (\dl\eta+\dl\zeta)
+ \end{align}
+ or, if we look at it the other way
+  \begin{align}
+ &\df\eta = \frac{1}{\sqrt2} \left( -  \df\varphi + \df\varphi' \right)
+ &\df\zeta = \frac{1}{\sqrt2} \left( \df\varphi + \df\varphi' \right)
+ \end{align}
 
 So, to sum everything up. Our EOM are can be represented by a set of coordiantes $x_i$ and masses $m_i$, such that $m_i \ddot{x}_i = -\partial_{x_i} U(\vec{x})$ (no implied sum). The detailed EOM are given by:
 
 
 \begin{multline}
-    C \ddot{\df\eta} = \frac{1}{L(1-\mu)} (\df\eta_x-\df\eta) + F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})
+    C \ddot{\df\eta} = \frac{1}{L(1-\mu)} (\df\eta_x-\df\eta) +\frac{1}{\sqrt{2}} F(\dl\varphi, \dl\varphi_{dc}) - \frac{1}{\sqrt{2}} F(\dl\varphi', \dl\varphi'_{dc})
 \end{multline}
     \\
 \begin{multline}
-    C \ddot{\df\eta}' = \frac{1}{L(1+\mu)} (\df\eta'_x-\df\eta') - F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc})
+    C \ddot{\df\eta}' = \frac{1}{L(1+\mu)} (\df\zeta_x-\df\zeta) - \frac{1}{\sqrt{2}} F(\dl\varphi, \dl\varphi_{dc}) - \frac{1}{\sqrt{2}} F(\dl\varphi', \dl\varphi'_{dc})
 \end{multline}
 
 \begin{align}
-\frac{C}{2} \ddot{\df\varphi}_{dc} = \frac{2\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) -  F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \\
-\frac{C}{2} \ddot{\df\varphi'}_{dc} = \frac{2\gamma}{L}\left( \df\varphi'_{xdc} -\df\varphi'_{dc}\right) -  F(\frac{\dl\varphi'_{dc}}{2}, 2\dl\varphi')
+\frac{C}{4} \ddot{\df\varphi}_{dc} = \frac{\gamma}{L}\left( \df\varphi_{xdc} -\df\varphi_{dc}\right) -  \frac{1}{2} F(\frac{\dl\varphi_{dc}}{2}, 2\dl\varphi) \\
+\frac{C}{4} \ddot{\df\varphi'}_{dc} = \frac{\gamma}{L}\left( \df\varphi'_{xdc} -\df\varphi'_{dc}\right) -  \frac{1}{2}F(\frac{\dl\varphi'_{dc}}{2}, 2\dl\varphi')
     \end{align}
 
 Consider that, in order to save space, we have used condensed notation. In fact, if we think about the above equation in terms of our actual coordinates-- the equations are quite a bit longer. For example:
 
 
 \begin{multline}
-    F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc}) = F_{\df\eta}(\dl\eta,\dl\eta',\dl\varphi_{dc},\dl\varphi'_{dc})   =  \\
-    I_{+} \sin \frac{-\dl\eta+\dl\eta'}{2} \cos \frac{\dl\varphi_{dc}}{2} + I_{-} \cos \frac{-\dl\eta+\dl\eta'}{2} \sin \frac{\dl\varphi_{dc}}{2} \\
-    - I_{+} \sin \frac{\dl\eta+\dl\eta'}{2} \cos \frac{\dl\varphi'_{dc}}{2} - I_{-} \cos \frac{\dl\eta+\dl\eta'}{2} \sin \frac{\dl\varphi'_{dc}}{2} 
+    F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc}) = F_{\df\eta}(\dl\eta,\dl\zeta,\dl\varphi_{dc},\dl\varphi'_{dc})   =  \\
+    I_{+} \sin \frac{-\dl\eta+\dl\zeta}{\sqrt2} \cos \frac{\dl\varphi_{dc}}{2} + I_{-} \cos \frac{-\dl\eta+\dl\zeta}{\sqrt2} \sin \frac{\dl\varphi_{dc}}{2} \\
+    - I_{+} \sin \frac{\dl\eta+\dl\zeta}{\sqrt2} \cos \frac{\dl\varphi'_{dc}}{2} - I_{-} \cos \frac{\dl\eta+\dl\zeta}{\sqrt2} \sin \frac{\dl\varphi'_{dc}}{2} 
 \end{multline}
 
 We should be able to simulate the equations of motion without an explicit potential since we have the force function in each direction-- but let's try to find the potential anyway. We know the potential is going to be composed of a sum of 4 qudratic terms, which localize each coordiante to its external flux, and several trigonometric functions that couple the variables together ($U=U_L+ U_C$). Let's ignore the quadratic part and focus on $U_C$. A solid guess of the answer, by inspection, would be:
 
 \begin{multline}
-U_C = -\frac{\Phi_0}{2\pi}\cdot 2 I_+ \left[ \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right] + \\
-\frac{\Phi_0}{2\pi}\cdot 2 I_- \left[ \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right]
+U_C = -\frac{\Phi_0}{2\pi}\cdot  I_+ \left[ \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right] + \\
+\frac{\Phi_0}{2\pi}\cdot  I_- \left[ \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right]
 \end{multline}
 
-It has been constructed to satisfy the $\df\varphi_{dc}, \df\varphi'_{dc}$ parts of the set of equations $m_i \ddot{x}_i = -\partial_{x_i} U(\vec{x})$ where $m_{dc} = m'_{dc} = \frac{C}{2} $. Now, we can check if this potential works by checking If $-\partial_{\df\eta} U_C = F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc}) $.
+It has been constructed to satisfy the $\df\varphi_{dc}, \df\varphi'_{dc}$ parts of the set of equations $m_i \ddot{x}_i = -\partial_{x_i} U(\vec{x})$ where $m_{dc} = m'_{dc} = \frac{C}{4} $. Now, we can check if this potential works by checking If $- \sqrt 2\partial_{\df\eta} U_C = F(\dl\varphi, \dl\varphi_{dc}) - F(\dl\varphi', \dl\varphi'_{dc}) $.
 
 \begin{align*}
- -\partial_{\df\eta} U_C &= -\fpderiv{\dl\eta} {\df\eta} \fpderiv{\dl\varphi} {\dl\eta} \fpderiv{U_c} {\dl\varphi} - \fpderiv{\dl\eta} {\df\eta} \fpderiv{\dl\varphi'} {\dl\eta} \fpderiv{U_c} {\dl\varphi'}\\
+ -\sqrt2 \partial_{\df\eta} U_C &= - \sqrt2 \fpderiv{\dl\eta} {\df\eta} \fpderiv{\dl\varphi} {\dl\eta} \fpderiv{U_c} {\dl\varphi} - \sqrt 2\fpderiv{\dl\eta} {\df\eta} \fpderiv{\dl\varphi'} {\dl\eta} \fpderiv{U_c} {\dl\varphi'}\\
  & = I_+ \left[ - \partial_{\dl\varphi} \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \partial_{\dl\varphi'} \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right]  \\
  &- I_- \left[ - \partial_{\dl\varphi} \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \partial_{\dl\varphi'} \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right] \\
- & = I_+ \left[ \sin\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} - \sin\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right]  \\
+ & =I_+ \left[ \sin\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} - \sin\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right]  \\
  &- I_- \left[ - \cos\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right] \\
  & = F(\dl\varphi,\dl\varphi_{dc}) - F(\dl\varphi',\dl\varphi'_{dc})
 \end{align*}
 
-The same process verifies that this potential also satisfies $-\partial_{\df\eta'} U_C = F(\varphi, \varphi_{dc}) + F(\varphi', \varphi'_{dc}) $. Taking into consideration the quadratic terms as well, we have:
+The same process verifies that this potential also satisfies $-\partial_{\df\zeta} U_C = \frac{1}{\sqrt2} F(\varphi, \varphi_{dc}) +\frac{1}{\sqrt2} F(\varphi', \varphi'_{dc}) $. Taking into consideration the quadratic terms as well, we have:
 
 \begin{align*}
-U &= \frac{1}{2L(1-\mu)} (\df\eta-\df\eta_x)^2 + \frac{1}{2L(1+\mu)} (\df\eta'-\df\eta'_x)^2 \\
- &+ \frac{\gamma}{L} \left( (\df\varphi_{dc}-\df\varphi_{xdc})^2 + (\df\varphi'_{dc}-\df\varphi'_{xdc})^2\right) + U_c
+U &= \frac{1}{2L(1-\mu)} (\df\eta-\df\eta_x)^2 + \frac{1}{2L(1+\mu)} (\df\zeta-\df\zeta_x)^2 \\
+ &+ \frac{\gamma}{2L} \left( (\df\varphi_{dc}-\df\varphi_{xdc})^2 + (\df\varphi'_{dc}-\df\varphi'_{xdc})^2\right) + U_c
 \end{align*}
 
 Once again, we can set an energy scale $U_0 = \frac{\Phi_0^2}{2\pi^2L}$ for the potential-- and write in in terms of just the nondimensional $\dl\eta$ coordinates:
 
 
 \begin{align*}
-\frac{U}{U_0} &= \frac{1}{2(1-\mu)} (\dl\eta_x-\dl\eta)^2 + \frac{1}{2(1+\mu)} (\dl\eta'_x-\dl\eta')^2 \\
+\frac{U}{U_0} &= \frac{1}{2(1-\mu)} (\dl\eta_x-\dl\eta)^2 + \frac{1}{2(1+\mu)} (\dl\zeta_x-\dl\zeta)^2 \\
  &+ \gamma \left( (\dl\varphi_{xdc}-\dl\varphi_{dc})^2 + (\dl\varphi'_{xdc}-\dl\varphi'_{dc})^2\right) + \frac{U_c}{U_0}
 \end{align*}
 
 where
 
 \begin{multline}
-    \frac{U_C}{U_0} = -2\beta \left[ \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right] + \\
-    2\delta\beta \left[ \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right]
+    \frac{U_C}{U_0} = -\beta \left[ \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right] + \\
+    \delta\beta \left[ \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right]
 \end{multline}
 
-As a final note, recall the convention to shift $\dl\varphi$ by $\pi$. This means redefinig our $\dl\eta,\dl\eta'$ to be shifted by $2\pi$, because fo the $\frac{1}{2}$ that relates the $\dl\eta$'s to the $\dl\varphi$'s. In terms of these new coordiantes, all that changes is:
+As a final note, recall the convention to shift $\dl\varphi$ by $\pi$. This means redefinig our $\dl\eta,\dl\zeta$ to be shifted by $\sqrt{2}\pi$, because fo the $\frac{1}{\sqrt2}$ that relates the $\dl\eta$'s to the $\dl\varphi$'s. In terms of these new coordiantes, all that changes is:
 
 \begin{multline}
-    \frac{U_C}{U_0} = +2\beta \left[ \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right] - \\
-    2\delta\beta \left[ \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right]
+    \frac{U_C}{U_0} = +\beta \left[ \cos\dl\varphi\cos\frac{\dl\varphi_{dc}}{2} + \cos\dl\varphi'\cos\frac{\dl\varphi'_{dc}}{2} \right] - \\
+    \delta\beta \left[ \sin\dl\varphi\sin\frac{\dl\varphi_{dc}}{2} + \sin\dl\varphi'\sin\frac{\dl\varphi'_{dc}}{2} \right]
 \end{multline}
 
 
@@ -594,9 +619,9 @@ Reintroducing the resistive shunts, we have the following EOMs:
 
 \begin{align*}
     C \ddot{\df\eta} + \frac{2 \dot{\df\eta}}{R} &= -\partial_{\df\eta} U_0 * U' \\
-    C \ddot{\df\eta}' + \frac{2 \dot{\df\eta'}}{R}  &= -\partial_{\df\eta'} U_0 * U' \\
-\frac{C}{2} \ddot{\df\varphi}_{dc} + \frac{\dot{\df\varphi}_{dc}}{R} &= -\partial_{\df\varphi_{dc}} U_0 * U' \\
-\frac{C}{2} \ddot{\df\varphi}'_{dc} + \frac{\dot{\df\varphi}'_{dc}}{R} &= -\partial_{\df\varphi'_{dc}} U_0 * U'
+    C \ddot{\df\eta}' + \frac{2 \dot{\df\zeta}}{R}  &= -\partial_{\df\zeta} U_0 * U' \\
+\frac{C}{4} \ddot{\df\varphi}_{dc} + \frac{\dot{\df\varphi}_{dc}}{2R} &= -\partial_{\df\varphi_{dc}} U_0 * U' \\
+\frac{C}{4} \ddot{\df\varphi}'_{dc} + \frac{\dot{\df\varphi}'_{dc}}{2R} &= -\partial_{\df\varphi'_{dc}} U_0 * U'
 \end{align*}
 
 We can see that the same strategy of non-dimensionalizing will work fine. In fact, we have ven written the potential in the form of $U_0 * U'$ in anticipation of the energy scale we used in the single device case. Using the same scaling factors as above, we should be able to implement a simulation using essentially the same equation as before (albeit with a different potential).
@@ -608,10 +633,10 @@ where
     \theta &= \frac{1 }{ m'} \\
     \df\eta &= \left(  \frac{L}{R^2 C} \right)^{1/4} \frac{\sqrt{\lambda'\kappa'}}{m'} \\
     &\text{and} \\
-    x' &= (\dl\eta, \dl\eta', \dl\varphi_{dc}, \dl\varphi'_{dc}) \\
+    x' &= (\dl\eta, \dl\zeta, \dl\varphi_{dc}, \dl\varphi'_{dc}) \\
     v' &= \frac{d}{dt'} x' \\
-    \lambda' &= (2, 2, 1, 1) \\
-    m' &= ( 1, 1, 1/2, 1/2) \\
+    \lambda' &= (2, 2, 1/2, 1/2) \\
+    m' &= ( 1, 1, 1/4, 1/4) \\
     \kappa' &= \frac{k_B T}{U_0}
 \end{align*}
 
