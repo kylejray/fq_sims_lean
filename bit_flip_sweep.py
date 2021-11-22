@@ -49,19 +49,23 @@ kT_prime = kT/Dev.U_0
 
 L_sweep = Dev.L*(np.linspace(.1,1,7))
 
-def sweep_L(Dev=Dev, L_vals=L_sweep, N=10_000, N_test=2500, delta_t=1/200, save_dir='./', minimize_ell=False):
-    L_cnt=0
+L_dict={'param':'L', 'sweep':L_sweep}
+
+def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=2500, delta_t=1/200, save_dir='./', minimize_ell=False, kT_prime=kT_prime):
+    param_vals = sweep_dict['sweep']
+    param = sweep_dict['param']
+    cnt=0
     date = datetime.datetime.now().strftime('%d_%m_%Y_%H%M_%S')
     output_dict={'kT_prime':kT_prime, 'date':date}
-    output_dict['L_sweep'] = L_vals
+    output_dict['param_sweep'] = param_vals
     output_dict['sim_results'] = []
 
-    for L in L_vals:
-        L_cnt += 1
-        print("\n L {} of {}".format(L_cnt, len(L_vals)))
+    for param_val in param_vals:
+        cnt += 1
+        print("\n {} {} of {}".format(param, cnt, len(param_vals)))
         temp_dict = {}
 
-        Dev.change_vals({'L':L})
+        Dev.change_vals({param:param_val})
 
         try: store_sys, comp_sys = set_systems(Dev, comp_tau=10)
         except AssertionError: continue
@@ -69,7 +73,7 @@ def sweep_L(Dev=Dev, L_vals=L_sweep, N=10_000, N_test=2500, delta_t=1/200, save_
         init_state = generate_eq_state(store_sys, N_test, kT_prime)
         try: verify_eq_state(init_state)
         except AssertionError:
-            print('\n bad initial_state at L check')
+            print('\n bad initial_state at param change check')
             temp_dict['store_params'] = store_sys.protocol.params
             temp_dict['comp_params'] = comp_sys.protocol.params
             temp_dict['device'] = copy.deepcopy(Dev).__dict__
@@ -205,7 +209,6 @@ def sweep_L(Dev=Dev, L_vals=L_sweep, N=10_000, N_test=2500, delta_t=1/200, save_
     return output_dict
 
 
-
 def save_sweep(output_dict, dir='./'):
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -289,6 +292,20 @@ def set_mean_evolution_procs(info_state_means):
         sp.MeasureStepValue(rp.get_current_state, trial_request=np.s_[1], output_name='one_means')
     ]
     return mean_evo_procs
+
+def set_bundle_evo_procs(state_bundle, weights=None):
+    is_bools = separate_by_state(state_bundle[...,0,0])
+    w_z = weights[is_bools['0']]
+    w_o = weights[is_bools['1']]
+
+    bundle_evo_procs = [
+        sp.ReturnFinalState(),
+        sp.ReturnInitialState(),
+        sp.MeasureAllState(trial_request=np.s_[:1000]),
+        sp.MeasureMeanValue(rp.get_current_state, trial_request=is_bools['0'], output_name='zero_means', weights=w_z),
+        sp.MeasureMeanValue(rp.get_current_state, trial_request=is_bools['1'], output_name='one_means', weights=w_o)
+    ]
+    return bundle_evo_procs
 
 def set_general_procs(initial_state, all_state_skip=5):
     is_bools = separate_by_state(initial_state[...,0,0])
@@ -387,6 +404,8 @@ def change_ell(Device, t_p, t_pdc, previous_ratio, test_mode=False):
     return new_ratio, i_plus
 
 def newtime(t1, w1, times, works, iter, delta_t):
+    if iter==15:
+        return t1, [t1, w1] , iter
     t2 = times[iter]
     w2 = works[iter]
     if np.isclose(w1, w2, atol=.0005):
@@ -442,7 +461,7 @@ def sweep_tau(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t, w
                 t_new += tau_resolution*np.sign(t_crit-t_new)
                 iter += 1
             else:
-                print('t_old, t_new, w_old, w_new',curr_t, times[iter], curr_w, w_list[iter])
+                print('t_old, t_new, w_old, w_new',curr_t, times[-1], curr_w, w_list[-1])
                 t_new, [curr_t, curr_w], iter = newtime(curr_t, curr_w, times, w_list, iter, tau_resolution)
         
         write_dict['tau_list'].extend(times)

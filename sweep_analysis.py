@@ -6,7 +6,9 @@ import os
 sys.path.append(os.path.expanduser('~/source'))
 
 from kyle_tools import w_TUR, open_json
+
 from kyle_tools.visualization import pcolor_diagram, heatmap, annotate_heatmap
+
 from matplotlib.colors import LogNorm
 
 
@@ -53,7 +55,7 @@ def work_heatmap(directory, key1, key2):
     returns sweep values for keys 1 and 2, and work values in units of kT_prime
     '''
     best_sims = []
-    directory_list = os.listdir(directory)
+    directory_list = [f for f in os.listdir(directory) if not f.startswith('.')]
     for param_sweep in directory_list:
         current_sweep = open_json(directory+param_sweep)
         kT_prime = current_sweep['kT_prime']
@@ -90,8 +92,16 @@ def work_heatmap(directory, key1, key2):
 
     return(axis1, axis2, W)
 
-def plot_work_heatmap(dir, key1, key2, ax=None, **imshow_kwargs):
-    x, y, W = work_heatmap(dir, key1, key2)
+def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label_data=None, **imshow_kwargs):
+    if dir is None:
+        if input_arrays is not None:
+            x, y, W = input_arrays
+        else:
+            print('no valid input array or directory')
+            return 
+    else:
+        x, y, W = work_heatmap(dir, key1, key2)
+
     max_w = np.nanmax(W)
     min_w = np.nanmin(W)
 
@@ -108,12 +118,11 @@ def plot_work_heatmap(dir, key1, key2, ax=None, **imshow_kwargs):
     ax.set_ylabel(key2)
 
 
-    texts = annotate_heatmap(im, valfmt="{x:.2f}")
+    texts = annotate_heatmap(im, data=label_data, valfmt="{x:.2f}")
 
     fig.tight_layout()
 
-    return ax, cbar
-
+    return ax, cbar, [x,y,W]
 
 
 

@@ -41,7 +41,7 @@ class DeviceParams():
         if not hasattr(self, 'I_plus'):
                 setattr(self, 'I_plus', 6.2*self.alpha/self.L)
         if not hasattr(self, 'I_minus'):
-                setattr(self, 'I_minus', .2*self.alpha/self.L)
+                setattr(self, 'I_minus', .1*self.alpha/self.L)
         
         self.refresh()
         
@@ -51,10 +51,28 @@ class DeviceParams():
         self.dbeta = self.I_minus*self.L/self.alpha
         self.U_0 = self.alpha**2/self.L
     
+    def meta_refresh(self):
+        self.ell = self.L/(2*self.gamma)
+
     def change_vals(self, value_dict):
         for key, value in value_dict.items():
             setattr(self, key, value)
         self.refresh()
+    
+    def change_gamma(self, gamma_dict):
+        for key,value in gamma_dict.items():
+            setattr(self, key, value)
+        self.meta_refresh()
+    
+    def perturb(self, bias=0, spread=.025, params=['C','R','L', 'ell', 'I_plus', 'I_minus']):
+        new_vals = []
+        for param in params:
+            curr_val = self.__dict__[param]
+            new_val = curr_val * (1+np.random.normal(bias, spread))
+            new_vals.append(new_val)
+        self.change_vals(dict(zip(params,new_vals)))
+            
+
 
 def fidelity(jumps):
     out = {}
