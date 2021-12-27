@@ -8,26 +8,45 @@ sys.path.append(os.path.expanduser('~/source'))
 from kyle_tools import w_TUR, open_json
 
 from kyle_tools.visualization import pcolor_diagram, heatmap, annotate_heatmap
-
+from kyle_tools.utilities import file_list
 from matplotlib.colors import LogNorm
 
 
 
 def plot_tau_sweep_sim_results(output_dict):
     sim_results = output_dict['sim_results']
-    kT_prime = output_dict['kT_prime']
     _, ax = plt.subplots(len(sim_results),2) 
     for i, item in enumerate(sim_results):
         plot_sim_avg(item['prelim_sim'], ax[i,0], highlight_times=item['tau_list'])
         works = []
         std = []
+
         for sim in item['sims']:
-            final_W = np.multiply(sim['final_W'], 1/kT_prime)
+            final_W = sim['final_W']
             works.append(np.mean(final_W))
             std.append(np.std(final_W))
-        min_W = np.min(works)
+        min_W = item['min_work']
+
         ax[i,1].errorbar(item['tau_list'], works, yerr=std, fmt="o")
         ax[i,1].set_title('L={:.2e},min_W={:.2f}'.format(sim['device']['L'], min_W))
+        ax[i,1].axhline(min_W)
+
+def plot_tau_sweep(output_dict, param_name='L'):
+    sim_results = output_dict['sim_results']
+    _, ax = plt.subplots(len(sim_results),2) 
+    for i, item in enumerate(sim_results):
+        tau_sweep=item['tau_sweep']
+
+        plot_sim_avg(item['prelim_sim'], ax[i,0], highlight_times=item['tau_list'])
+
+        N_trials=len(tau_sweep['sim']['initial_state'])
+
+        works= tau_sweep['mean_W']
+        std = [ 3*std/np.sqrt(N_trials) for std in tau_sweep['std_W']]
+        min_W = item['min_work']
+
+        ax[i,1].errorbar(item['tau_list'], works, yerr=std, fmt="o")
+        ax[i,1].set_title(param_name+'={:.2e},min_W={:.2f}'.format(tau_sweep['sim']['device'][param_name], min_W))
         ax[i,1].axhline(min_W)
 
 def plot_sim_avg(sim_dict, ax, highlight_times=None):
@@ -42,37 +61,98 @@ def plot_sim_avg(sim_dict, ax, highlight_times=None):
         ax.plot(time, item)
     ax.plot(time, zmp)
     ax.plot(time, omp)
-    ax.axvline(sim_dict['t_crit'], c='k') 
-    for t_val in sim_dict['tau_list']:
-        ax.axvline(t_val, c='r')
+    if 't_crit' in sim_dict.keys():
+        ax.axvline(sim_dict['t_crit'], c='k') 
+    if 'tau_list' in sim_dict.keys():
+        for t_val in sim_dict['tau_list']:
+            ax.axvline(t_val, c='r')
     if highlight_times is not None:
         for t_val in highlight_times:
-            ax.axvline(t_val, alpha=.4)
+            ax.axvline(t_val, alpha=.1)
     ax.set_xlabel('t/sqrt(LW)')
 
-def work_heatmap(directory, key1, key2):
+
+
+def plot_sim_avg_err(times, state_list, slice_list, err_scale, ax, kwarg_list=None, **plt_kwargs):
+    i=0
+    for mean_dict in state_list:
+
+        vals = np.array(mean_dict['values'])
+        try:
+            N = sum(mean_dict['trial_indices'])
+        except:
+            N = 1
+        
+        try:
+            errs = err_scale * np.sqrt(N) * np.array(mean_dict['std_error'])
+        except:
+            print('had a problem determining errors')
+            errs = np.zeros(vals.shape)
+
+        for item in slice_list:
+            v, err = vals[item], errs[item]
+            if kwarg_list is not None:
+                plt_kwargs.update(kwarg_list[i])
+
+            ax.errorbar(times, v, yerr=err, **plt_kwargs)
+
+            if i < len(slice_list)*len(state_list):
+                i += 1
+
+def highlight_times(t_list, opacity, ax):
+    for t_val in t_list:
+        ax.axvline(t_val, alpha=opacity)
+
+def plot_one_allstate(all_state, ax, state_slice=np.s_[...,0,0], t=None, sim_dict=None):
+    # if t is None, sim_dict cannot be None
+    step_indices = eval(all_state['step_indices'])
+    states = np.array(all_state['states'])[state_slice]
+
+    if t is None:
+        if sim_dict is not None:
+            t = np.linspace(0, sim_dict['dt'] * sim_dict['nsteps'], sim_dict['nsteps']+1)[step_indices]
+        if sim_dict is None:
+            t= np.linspace(0, 1, len(step_indices)+1)
+    else:
+        t = np.array(t)[step_indices]
+    
+    plt.plot(t, states.transpose())
+
+
+        
+        
+
+
+
+def work_heatmap(directory, key1, key2, fidelity_thresh=.99):
     '''
     returns sweep values for keys 1 and 2, and work values in units of kT_prime
     '''
     best_sims = []
-    directory_list = [f for f in os.listdir(directory) if not f.startswith('.')]
+    directory_list = file_list(directory, extension_list=['.json'])
     for param_sweep in directory_list:
         current_sweep = open_json(directory+param_sweep)
-        kT_prime = current_sweep['kT_prime']
         for param_value in current_sweep['sim_results']:
             temp_dict={}
 
             try:
                 temp_dict['work'] = param_value['min_work']
+                best_idx = param_value['min_work_index']
             except:
                 continue
             temp_dict[key1] = None
             temp_dict[key2] = None
+
+            try:
+                tau_sweep = param_value['tau_sweep']
+            except:
+                pass
+
             if temp_dict['work'] is not None:
-                best_sim = param_value['sims'][param_value['min_work_index']]
-                temp_dict[key1] = best_sim['device'][key1]
-                temp_dict[key2] = best_sim['device'][key2]
-                temp_dict['work'] = temp_dict['work']/kT_prime
+                temp_dict[key1], temp_dict[key2] = [tau_sweep['sim']['device'][key] for key in [key1,key2]]
+                temp_dict['fidelity'] = tau_sweep['fidelity'][best_idx]['overall']
+                temp_dict['valid_final_state']= tau_sweep['valid_final_state'][best_idx]
+
             best_sims.append(temp_dict)
 
     axis1 = list(set([ sim[key1] for sim in best_sims if sim[key1] is not None]))
@@ -80,22 +160,26 @@ def work_heatmap(directory, key1, key2):
     for lst in [axis1,axis2]:
         lst.sort()
 
-    W = np.zeros((len(axis1), len(axis2)))
+    W, F, VFS = np.zeros((3,len(axis1), len(axis2)))
 
     for ix, xval in enumerate(axis1):
         for iy, yval in enumerate(axis2):
+
+            #F[ix,iy] = min([ item['fidelity'] for item in best_sims if item[key1]==xval and item[key2]==yval ])
+            #VFS[ix,iy] = min([ item['valid_final_state'] for item in best_sims if item[key1]==xval and item[key2]#==yval ])
+
             valid_works= [ item['work'] for item in best_sims if item[key1]==xval and item[key2]==yval ]
             valid_works = [item for item in valid_works if item is not None]
             W[ix, iy] = np.nan
             if len(valid_works)>0:
                 W[ix,iy] = np.min(valid_works)
 
-    return(axis1, axis2, W)
+    return axis1, axis2, W, [F,VFS]
 
-def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label_data=None, **imshow_kwargs):
+def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label=True, label_data=None, label_fmt="{x}", label_color=None, **imshow_kwargs):
     if dir is None:
         if input_arrays is not None:
-            x, y, W = input_arrays
+            x, y, W, _ = input_arrays
         else:
             print('no valid input array or directory')
             return 
@@ -106,24 +190,51 @@ def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label_data=N
     min_w = np.nanmin(W)
 
     
-    x = ['{:.2e}'.format(val) for val in x]
-    y = ['{:.2e}'.format(val) for val in y]
+    x = ['{:.1e}'.format(val) for val in x]
+    y = ['{:.1f}'.format(val) for val in y]
 
     if ax is None:
         fig, ax = plt.subplots()
 
-    im, cbar = heatmap(W, x, y, ax=ax, cmap="plasma", cbarlabel="work (k_B T)", **imshow_kwargs, norm=LogNorm(vmin=min_w, vmax=max_w))
+
+    im, cbar = heatmap(W, x, y, ax=ax, cmap="plasma", cbarlabel="work ($k_B$ T)", **imshow_kwargs, norm=LogNorm(vmin=min_w, vmax=max_w), cbar_kw={'shrink':.5})
 
     ax.set_xlabel(key1)
     ax.set_ylabel(key2)
 
+    if label:
+        annotate_kw={}
+        annotate_kw.update(textcolors='white')
+        if label_color is not None:
+            annotate_kw.update(textcolors=label_color)
 
-    texts = annotate_heatmap(im, data=label_data, valfmt="{x:.2f}")
-
-    fig.tight_layout()
+        annotate_kw.update(valfmt=label_fmt)    
+        texts = annotate_heatmap(im, data=label_data, **annotate_kw)
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax, cbar, [x,y,W]
 
+def get_best_protocols(output_dict, keys=[]):
+    valid_sims = [('terminated' not in sim.keys()) and (sim['min_work'] is not None) for sim in output_dict['sim_results']]
+
+    param_sweep = [item for i,item in enumerate(output_dict['param_sweep']) if valid_sims[i]]
+
+    sims = [item for i, item in enumerate(output_dict['sim_results']) if valid_sims[i]]
+
+    idx = [sim['min_work_index'] for sim in sims]
+
+    output={}
+
+    keys = keys + ['fidelity', 'device', 'final_W']
+    for key in keys:
+        output[key] = [ sim['sims'][idx[i]][key] for i,sim in enumerate(sims)]
+
+    output['param'] = param_sweep
+
+    return output
 
 
 def plot_w_TUR(out_d, output=None, ax=None, yscale='log'):
@@ -161,9 +272,8 @@ def plot_w_TUR(out_d, output=None, ax=None, yscale='log'):
         return work, bound, scaled_var
         
 
-def plot_all_state(output_dict, which_sims=np.s_[:]):
-    kT_prime = output_dict['kT_prime']
-    sim_results = output_dict['sim_results']
+def plot_all_state(output_dict, which_sims=np.s_[:], which_params=np.s_[:]):
+    sim_results = np.asarray(output_dict['sim_results'])[which_params]
     n_columns = len(sim_results)
     ax_j =0 
     for param_set in sim_results:
@@ -177,7 +287,7 @@ def plot_all_state(output_dict, which_sims=np.s_[:]):
                 all_s = np.array(all_state['states'])
                 step_indices = eval(all_state['step_indices'])
                 t = np.linspace(0, sim['dt'] * sim['nsteps'], sim['nsteps']+1)[step_indices]
-                w = np.mean(sim['final_W'])/kT_prime
+                w = np.mean(sim['final_W'])
                 ax[ax_i,ax_j].plot(t, all_s[...,0,0].transpose())
                 ax[ax_i,ax_j].set_title('W={:.3f},F={:.3f}'.format(w,sim['fidelity']['overall']))
 

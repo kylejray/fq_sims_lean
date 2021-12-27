@@ -10,4 +10,4 @@ meant to represent the EOM's of our SQUID circuits, neglecting any dynamics or i
 
 2 The resources and tutorial directory has a writeup that explains where the equations of motion come from as well as a tutorial notebook for the protocol designing package. 
 
-3 The source directory contains the python modules that the other notebooks rely on
+3 The source directory contains the python modules that the other notebooks rely on, to use the other pieces of code, all the code assumes that you place the source directory in your home folder-- and it will look for the code in "~/source" no matter what your OS is. To update you can navigate to the source folder in this repo and do a git pull-- then copy that directory to your home folder.

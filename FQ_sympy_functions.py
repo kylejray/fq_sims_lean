@@ -28,41 +28,86 @@ def find_px(db, p_dc, mode='min_of_max'):
     if mode=='min_of_mid':
         return float(-db*sin(p_dc/2))
 
+'''
+#params 2:
+kT = 6.9E-24
+value_dict = {'C':530E-15, 'R':2.1, 'L':140E-12}
+Dev2 = DeviceParams(value_dict)
+'''
+
 required_attributes = {'C':4E-9, 'R':371, 'L':1E-9, 'alpha':2.07E-15/(2*np.pi)}
 
+
 class DeviceParams():
-    def __init__(self, value_dict={}):
-        for dictionary in [required_attributes, value_dict]:
+    def __init__(self, val_dict={}):
+        self.meta_params = ['gamma', 'beta','dbeta', 'U_0']
+        self.dev_params = ['ell', 'I_plus', 'I_minus', 'L']
+
+        for dictionary in [required_attributes, val_dict]:
             for key, value in dictionary.items():
                 setattr(self, key, value)
-
-        if not hasattr(self, 'ell'):
-                setattr(self, 'ell', self.L/24)
-        if not hasattr(self, 'I_plus'):
-                setattr(self, 'I_plus', 6.2*self.alpha/self.L)
-        if not hasattr(self, 'I_minus'):
-                setattr(self, 'I_minus', .1*self.alpha/self.L)
         
-        self.refresh()
+        init_dict={}
+        if not hasattr(self, 'ell'):
+                init_dict['gamma'] = 12
+        if not hasattr(self, 'I_plus'):
+                init_dict['beta'] = 6.2
+        if not hasattr(self, 'I_minus'):
+                init_dict['dbeta']= .1
+        self.change_vals(init_dict)
+
+        if not hasattr(self, 'kT_prime'):
+                self.kT_prime = .41*1.38E-23/self.U_0
+        
         
     def refresh(self):
-        self.gamma = self.L/(2*self.ell)
-        self.beta = self.I_plus*self.L/self.alpha
-        self.dbeta = self.I_minus*self.L/self.alpha
-        self.U_0 = self.alpha**2/self.L
+        self.gamma = self.L / (2*self.ell)
+        self.beta = self.I_plus * self.L / self.alpha
+        self.dbeta = self.I_minus * self.L / self.alpha
+        self.U_0 = self.alpha**2 / self.L
     
     def meta_refresh(self):
         self.ell = self.L/(2*self.gamma)
+        self.I_plus = self.beta * self.alpha / self.L
+        self.I_minus = self.dbeta * self.alpha / self.L
+        self.L = self.alpha**2 / self.U_0
+        
 
-    def change_vals(self, value_dict):
-        for key, value in value_dict.items():
-            setattr(self, key, value)
-        self.refresh()
+    def change_vals(self, val_dict):
+        assert all( not((p[0] in val_dict.keys()) and (p[1] in val_dict.keys())) for p in zip(self.dev_params,self.meta_params)), 'tried to change param and its meta param at the same time, for example gamma and ell'
+
+        if any(key in self.meta_params for key in val_dict.keys()):
+            meta_dict = {key:value for key,value in val_dict.items() if key in self.meta_params}
+            val_dict = {key:value for key,value in val_dict.items() if key not in self.meta_params}
+
+        self.U_0 = self.alpha**2 / self.L
+
+        try:
+            for key, value in val_dict.items():
+                setattr(self, key, value)
+            self.refresh()
+        except: pass
+
+        try:
+            for key,value in meta_dict.items():
+                setattr(self, key, value)
+            self.meta_refresh()
+        except: pass
+
+    def quantum_ratio(self):
+        return 1.054E-34 / (np.sqrt(self.L*self.C)*self.kT_prime*self.U_0)
     
-    def change_gamma(self, gamma_dict):
-        for key,value in gamma_dict.items():
-            setattr(self, key, value)
-        self.meta_refresh()
+    def to_dict(self):
+        output_dict= { key:value for key, value in self.__dict__.items() }
+        output_dict['quantum'] = self.quantum_ratio()
+        for item in ['dev_params', 'meta_params']:
+            del(output_dict[str(item)])
+        return output_dict
+
+    def get_temp(self):
+        return self.kT_prime * self.U_0 / 1.38E-23
+
+    
     
     def perturb(self, bias=0, spread=.025, params=['C','R','L', 'ell', 'I_plus', 'I_minus']):
         new_vals = []
@@ -71,7 +116,12 @@ class DeviceParams():
             new_val = curr_val * (1+np.random.normal(bias, spread))
             new_vals.append(new_val)
         self.change_vals(dict(zip(params,new_vals)))
-            
+
+round_vals = {'C':4E-9, 'R':4E2, 'L':5E-10, 'alpha':2.07E-15/(2*np.pi), 'kT_prime':.05}
+
+RoundDevice = DeviceParams(val_dict=round_vals)
+RoundDevice.change_vals({'beta':6})   
+
 
 
 def fidelity(jumps):

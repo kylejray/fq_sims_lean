@@ -1,8 +1,9 @@
 import bit_flip_sweep as bfs
 from kyle_tools import separate_by_state
+from kyle_tools.info_space import is_bundle
 import numpy as np
 import matplotlib.pyplot as plt
-from FQ_sympy_functions import DeviceParams
+
 
 def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bundle_size=5):
     i=0
@@ -10,6 +11,11 @@ def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bund
     lcand=[[], [], []]
     rcand=[[], [], []]
     tc=[[], [], []]
+
+    lcand_2=[[], [], []]
+    rcand_2=[[], [], []]
+    tc_2=[[], [], []]
+
     if plot:
         fig, ax = plt.subplots(4,N_trial)
     while i<N_trial:
@@ -20,9 +26,8 @@ def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bund
         init_s_1 = bfs.generate_eq_state(store, N_mean, bfs.kT_prime)
         init_s_2 = bfs.info_state_means(init_s_1)
         is_bools = separate_by_state(init_s_1[...,0,0])
-
         init_s_3, weights_3 = is_bundle(init_s_1, is_bools, bundle_size)
-        print(np.shape(init_s_3)[0])
+        #print(np.shape(init_s_3)[0])
 
 
         init_s_1 = init_s_1[:N_full]
@@ -33,12 +38,14 @@ def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bund
 
         print('\r trial {} of {} initialized'.format(i,N_trial), end='')
         colors=['r','b','k', 'g']
+        colors_2=['m','y','c']
         for j,sim in enumerate([sim_1, sim_2, sim_3]):
             sim.output = sim.run()
             z_states = sim.output.zero_means['values']
             o_states = sim.output.one_means['values']
             times = np.linspace(0, comp.protocol.t_f, sim.nsteps+1)
             tau_candidates, t_crit = bfs.get_tau_candidate(z_states, o_states, times)
+            tau_candidates_2, t_crit_2 = get_tau_candidate_new(sim)
             if plot:
                 if j == 0:
                     full_z = z_states
@@ -51,7 +58,9 @@ def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bund
                     ax[j,i].plot(times, item[:,0,1].transpose())
                     ax[j,i].plot(times, item[:,1,1].transpose())
                     for k,item in enumerate([tau_candidates[0], tau_candidates[1], t_crit]):
-                        ax[j,i].axvline(item, c=colors[k])
+                        ax[j,i].axvline(item, c=colors[k], alpha=.8)
+                    for k,item in enumerate([tau_candidates_2[0], tau_candidates_2[1], t_crit_2]):
+                        ax[j,i].axvline(item, c=colors_2[k], alpha=.8)
                 
                 if j > 0:
                     for item in [z_diff, o_diff]:
@@ -63,6 +72,12 @@ def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bund
             lcand[j].append(tau_candidates[0])
             rcand[j].append(tau_candidates[1])
             tc[j].append(t_crit)
+
+            lcand_2[j].append(tau_candidates_2[0])
+            rcand_2[j].append(tau_candidates_2[1])
+            tc_2[j].append(t_crit_2)
+
+
         i+=1
         print('\r {:.0f}% done'.format(100*i/N_trial), end='')
     if plot:
@@ -71,58 +86,51 @@ def test_tau_candidates(N_full, N_mean, N_trial, Dev, dt=1/100, plot=False, bund
         ax[2,0].set_title('bundle_evo')
         ax[3,0].set_title('bundle:black, full:blue')
         plt.show()
-    return lcand, rcand, tc
+    return [lcand, rcand, tc], [lcand_2, rcand_2, tc_2]
 
-def eq_dist_bundle(state_ensemble, is_bools, eq_sys, N):
-    output = None
-    for key in is_bools:
-        info_state = state_ensemble[is_bools[key]][:N]
-        prob = eq_sys.get_energy(info_state, 0)
-        info_state_weight = np.exp(-prob)
-        if output is None:
-            output = info_state
-            weights= info_state_weight
-        else:
-            output = np.append(output, info_state, axis=0)
-            weights = np.append(weights, info_state_weight, axis=0)
-        
 
-    return output[weights!=0], weights[weights!=0]
+def find_zero(a, t, burn_in=0, mode='decreasing'):
+    D = -2
+    if mode is 'increasing':
+        D = 2
+    assert len(a)==len(t), '\n a and t need to be same length'
+    for i,item in enumerate(a):
+        if i > burn_in:
+            if np.sign(item) - np.sign(last_item) == D:
+                t_i = t[i-1] + (t[i]-t[i-1])* last_item/(last_item+abs(item))
+                return i, t_i
+        last_item = item
 
-def is_bundle(state_ensemble, is_bools, n_points):
-    coords=[]
-    weights=[]
-    for key in is_bools:
-        info_state = state_ensemble[is_bools[key]]
-        c, w = representative_bundle(info_state, n_points)
-        coords.append(c)
-        weights.append(w)
-    output = coords[0]
-    out_weight = weights[0]
-    for item in zip(coords[1:], weights[1:]):
-        output = np.append(output,item[0], axis=0)
-        out_weight = np.append(out_weight, item[1], axis=0)
+
+def get_tau_candidate_new(sim):
+    burn = int(1/sim.dt)
+
+    z_means = sim.output.zero_means['values'][burn:]
+    o_means = sim.output.one_means['values'][burn:]
+    t = np.linspace(0, sim.nsteps*sim.dt, sim.nsteps+1)[burn:]
+    t_list =[[],[]]
     
-    return output, out_weight
+    z_kinetic = np.sum(z_means[...,1]**2 * (.25, 1), axis=-1)
+    o_kinetic = np.sum(o_means[...,1]**2 * (.25, 1), axis=-1)
+    i_z = np.max(np.where(z_kinetic==z_kinetic.min()))
+    i_o = np.max(np.where(o_kinetic==o_kinetic.min()))
 
-def representative_bundle(state_ensemble, n_points):
-    state_ensemble =np.squeeze(state_ensemble)
-    shape = np.shape(state_ensemble)
-    N, state_shape = shape[0], shape[1:]
-    state = state_ensemble.reshape(N, np.prod(state_shape))
+    i_crit = int((i_z+i_o)/2)
+    t_crit = (t[i_z] + t[i_o])/2
 
 
-    state_means = np.mean(state, axis=0)
-    state_stds = np.std(state, axis=0)
-    bins = np.linspace(state_means-3*state_stds, state_means+3*state_stds, n_points+1).transpose()
-    hist = np.histogramdd(state, bins=bins, density=True)
-    values = bins[:,:-1] + np.diff(bins)/2
-    mesh = np.meshgrid(*values)
-    mesh = [item.ravel() for item in mesh]
-    coords = np.array([ np.reshape(item, state_shape) for item in list(zip(*mesh))])
-    weights = np.ravel(hist[0])
+    assert np.sign(z_means[i_crit,0,0]) == 1 and np.sign(o_means[i_crit,0,0]) == -1, 'not a good swap'
 
-    return coords[weights != 0], weights[weights != 0]
+    for item in [z_means, o_means]:
+        t_list[1].append(find_zero(item[i_crit:,1,1], t[i_crit:])[1])
+        dt_left = find_zero(item[i_crit::-1,1,1],-t[i_crit::-1]+t[i_crit], mode='increasing')[1]
+        t_list[0].append(t[i_crit]-dt_left)
 
+    for i,item in enumerate(t_list):
+        t_list[i] = np.mean(item)
+    
+    return t_list, t_crit
+        
+#from FQ_sympy_functions import DeviceParams
 #Devc = DeviceParams()
 #L,R,T = test_tau_candidates(5_000, 5_000, 4, Devc, dt=1/100, plot=True, bundle_size=4)
