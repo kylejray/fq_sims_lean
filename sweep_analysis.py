@@ -71,6 +71,20 @@ def plot_sim_avg(sim_dict, ax, highlight_times=None):
             ax.axvline(t_val, alpha=.1)
     ax.set_xlabel('t/sqrt(LW)')
 
+def get_tau_sweep_if_states(sim_results):
+    init_states = []
+    final_states = []
+    for sweep in sim_results:
+        if 'terminated' in sweep.keys():
+            init_states.append(sweep['prelim_sim']['initial_state'])
+            final_states.append(None)
+        else:
+            sim = sweep['tau_sweep']['sim']
+            if_states = [ np.array(np.array(sim[item]))[...,0,0] for item in ['initial_state', 'final_state'] ]
+            init_states.append(if_states[0])
+            final_states.append(if_states[1])
+    return init_states, final_states
+
 
 
 def plot_sim_avg_err(times, state_list, slice_list, err_scale, ax, kwarg_list=None, **plt_kwargs):
@@ -116,7 +130,7 @@ def plot_one_allstate(all_state, ax, state_slice=np.s_[...,0,0], t=None, sim_dic
     else:
         t = np.array(t)[step_indices]
     
-    plt.plot(t, states.transpose())
+    ax.plot(t, states.transpose())
 
 
         
@@ -150,7 +164,7 @@ def work_heatmap(directory, key1, key2, fidelity_thresh=.99):
 
             if temp_dict['work'] is not None:
                 temp_dict[key1], temp_dict[key2] = [tau_sweep['sim']['device'][key] for key in [key1,key2]]
-                temp_dict['fidelity'] = tau_sweep['fidelity'][best_idx]['overall']
+                temp_dict['fidelity'] = tau_sweep['fidelity']['overall'][best_idx]
                 temp_dict['valid_final_state']= tau_sweep['valid_final_state'][best_idx]
 
             best_sims.append(temp_dict)
@@ -216,6 +230,16 @@ def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label=True, 
         pass
 
     return ax, cbar, [x,y,W]
+
+
+def get_heatmap_labels(W, label_dict):
+    labels = np.empty(W.shape, dtype='object')
+    labels[...] = ' '
+    for label, rule in label_dict.items():
+        e_rule = eval(rule.format('W'))
+        labels[e_rule] = label
+    return labels
+
 
 def get_best_protocols(output_dict, keys=[]):
     valid_sims = [('terminated' not in sim.keys()) and (sim['min_work'] is not None) for sim in output_dict['sim_results']]

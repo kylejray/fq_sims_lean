@@ -125,10 +125,13 @@ RoundDevice.change_vals({'beta':6})
 
 
 def fidelity(jumps):
+    
     out = {}
     names = ['+ to -', '- to +']
     tot_fails = 0
     total =0
+
+
     for i, key in enumerate(jumps):
         length = len(jumps[key])
         succ, tot = sum(jumps[key]==2), sum(jumps[key]!=0)
@@ -140,6 +143,29 @@ def fidelity(jumps):
     out['overall'] = 1-tot_fails/total
 
     return out
+
+def fidelity_array(jump_array):
+
+    _, _, N = jump_array.shape
+
+    out = {}
+    names = ['+ to -', '- to +']
+
+    succ = np.sum(jump_array==2, axis=-1)
+    total = np.sum(jump_array!=0, axis=-1)
+    tot_diff = np.sum(total, axis=-1)-N
+
+    if sum(tot_diff!=0) > 0:
+        print ('missed counting {} trajectories in fidelity in {} trials'.format(sum(tot_diff), sum(tot_diff!=0)))
+
+    for i, name in enumerate(names):
+        out[name] = succ[:,i]/total[:,i]
+    
+    out['overall'] =1- (total-succ).sum(axis=-1)/total.sum(axis=-1)
+
+    return out
+
+
 
     
 

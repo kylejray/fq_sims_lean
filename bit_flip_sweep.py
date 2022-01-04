@@ -24,7 +24,7 @@ from infoenginessims.simprocedures import basic_simprocedures as sp
 from infoenginessims.simprocedures import running_measurements as rp
 from infoenginessims.simprocedures import trajectory_measurements as tp
 
-from FQ_sympy_functions import find_px, DeviceParams, fidelity
+from FQ_sympy_functions import find_px, DeviceParams, fidelity, fidelity_array
 
 
 
@@ -49,7 +49,7 @@ L_sweep = Dev.L*(np.linspace(.1,1,7))
 
 L_dict={'param':'L', 'sweep':L_sweep}
 
-def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=2500, delta_t=1/200, d_s_c=[.2,.2], save_dir='./', minimize_ell=False):
+def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2,.2], save_dir='./', d_s_max=.44, minimize_ell=False):
 
     param_vals = sweep_dict['sweep']
     param = sweep_dict['param']
@@ -61,9 +61,12 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=2500, delta_t=1/200
     output_dict['sim_results'] = []
 
     for param_val in param_vals:
+        d_s_c = [item for item in d_s_c_init]
+
         cnt += 1
-        print("\n {} {} of {}".format(param, cnt, len(param_vals)))
+        print("\n {}={};  {} of {}".format(param, param_val, cnt, len(param_vals)))
         temp_dict = {}
+        temp_dict['notes'] = []
 
         Dev.change_vals({param:param_val})
 
@@ -71,39 +74,59 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=2500, delta_t=1/200
         except AssertionError:
             print('failed at Device check') 
             continue
+
         
-        try: store_sys, comp_sys = set_systems(Dev, comp_tau=10, d_store_comp=d_s_c)
-        except:
-            print('failed at system creation')
-            continue
-        print('starting_prelim_eq_state')
         date2 = get_date()
+        print('generating prelim valid eq state')
+
+        invalid_initial_state = True
+        tries=0
+
+        while invalid_initial_state:
+            tries += 1
+        
+            try: store_sys, comp_sys = set_systems(Dev, comp_tau=10, d_store_comp=d_s_c)
+            except:
+                print('unexpectedly failed at system creation')
+                continue
+            
+            
+            init_state = generate_eq_state(store_sys, N_test, Dev.kT_prime, eq_verbose=False)
 
 
-        init_state = generate_eq_state(store_sys, N_test, Dev.kT_prime)
+            try:
+                verify_eq_state(init_state, verbose=False)
+                invalid_initial_state = False
+            except AssertionError:
+                if d_s_c[0] < d_s_max:
+                    d_s_c[0] += .02
+                else:
+                    continue
+        
+        temp_dict['store_params'] = store_sys.protocol.params
+        temp_dict['comp_params'] = comp_sys.protocol.params
+        temp_dict['device'] = Dev.to_dict()
 
-        try: verify_eq_state(init_state)
-        except AssertionError:
+
+        if invalid_initial_state:
             print('\n bad initial_state at param change')
-            temp_dict['store_params'] = store_sys.protocol.params
-            temp_dict['comp_params'] = comp_sys.protocol.params
-            temp_dict['device'] = Dev.to_dict()
             temp_dict['initial_state'] = init_state
             temp_dict['terminated'] = True
             output_dict['sim_results'].append(temp_dict)
             continue
-        
+                    
+            
         is_bools = separate_by_state(init_state[...,0,0])
         prelim_init, prelim_weights = is_bundle(init_state, is_bools, prelim_bundle_size)
         
+        date3 = get_date()
+        print('took {} tries, time elapsed: {} \n starting prelim sim'.format(tries, duration_minutes(date2,date3)))
         no_candidates = True
         while no_candidates:
 
             prelim_sim = generate_sim(comp_sys, prelim_init, Dev, delta_t, set_bundle_evo_procs, weights=prelim_weights)
             #prelim_sim = generate_sim(comp_sys, init_state, Dev, 2*delta_t, set_mean_procs)
 
-            date3 = get_date()
-            print('time elapsed: {} \n starting prelim sim'.format(duration_minutes(date2,date3)))
 
             prelim_sim.output = prelim_sim.run()
 
@@ -121,9 +144,6 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=2500, delta_t=1/200
         prelim_d = prelim_sim.output.__dict__
         prelim_d['dt'] = prelim_sim.dt
         prelim_d['nsteps'] = prelim_sim.nsteps
-        prelim_d['store_params'] = store_sys.protocol.params
-        prelim_d['comp_params'] = comp_sys.protocol.params
-        prelim_d['device'] = Dev.to_dict()
         temp_dict['prelim_sim'] = prelim_d
         
 
@@ -220,19 +240,34 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=2500, delta_t=1/200
         for curr_sys, tau_list, t_crit, Dev in list(zip(sys_candidates, test_times, t_crit, Devs)):
 
             store_sys, comp_sys = curr_sys
-            init_state = generate_eq_state(store_sys, N, Dev.kT_prime)
-            try: verify_eq_state(init_state)
-            except AssertionError:
-                print('\n unexpected bad initial_state')
-                continue
             
+
+            tries=0
+            invalid_initial_state=True
+            while invalid_initial_state:
+                init_state = generate_eq_state(store_sys, N, Dev.kT_prime)
+                try:
+                    verify_eq_state(init_state)
+                    if tries>0:
+                        print(' \n took {} tries'.format(tries))
+                    invalid_initial_state = False
+                except AssertionError:
+                    tries+=1
+                    if tries < 10:
+                        print(' \n unexpected bad initial_state, retrying'.format(tries))
+                    else:
+                        print('\n no valid initial state found in {} tries'.format(tries))
+                        temp_dict['notes'].append('unexpected varification failure in sim initial state')
+                        break
+        
             min_work, w_idx = sweep_tau_2(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t, temp_dict)
 
             temp_dict['min_work'] = min_work
             temp_dict['min_work_index'] = w_idx
 
         output_dict['sim_results'].append(temp_dict)
-    
+
+
     end_date = get_date()
     output_dict['duration'] = duration_minutes(date, end_date)
 
@@ -255,11 +290,13 @@ def duration_minutes(start_time, end_time):
     
     return round(60*(end_hr-start_hr)+ end_min-start_min + (end_sec-start_sec)/60, 2)
 
-def save_sweep(output_dict, dir='./'):
+def save_sweep(output_dict, name=None, dir='./'):
     if not os.path.exists(dir):
         os.makedirs(dir)
     save_dict = jsonify(output_dict)
-    name = output_dict['save_name']
+
+    if name is None:
+        name = output_dict['save_name']
     dir += name + output_dict['start_time'] + '.json'
     with open(dir, 'w') as fout:
         json.dump(save_dict, fout)
@@ -268,7 +305,7 @@ def save_sweep(output_dict, dir='./'):
 
 def check_device(Device):
     assert 4*Device.gamma > Device.beta, '\n gamma must be >beta/4, it is set too small'
-    assert Device.beta > 1, '\n beta < 1, it is set too small'
+    assert Device.beta > 1, '\n beta cant be < 1, it is set too small'
     assert Device.quantum_ratio() < .1, 'approaching quantum regime'
 
 def set_systems(Device, eq_tau=1, comp_tau=1, d_store_comp=[.2,.2]):
@@ -295,14 +332,14 @@ def set_systems(Device, eq_tau=1, comp_tau=1, d_store_comp=[.2,.2]):
 
     return(store_sys, comp_sys)
 
-def generate_eq_state(eq_sys, N, kT_prime, domain=None):
+def generate_eq_state(eq_sys, N, kT_prime, domain=None, eq_verbose=False):
     pxdc_store = eq_sys.protocol.params[1,0]
     gamma_store = eq_sys.protocol.params[2,0]
     if domain is None:
         range = np.e/np.sqrt(gamma_store/2)
         domain = [[-4, pxdc_store-2*range], [4, pxdc_store+2*range]]
     
-    init_state = eq_sys.eq_state(N, beta=1/(kT_prime), manual_domain=domain, axes=[1,2], verbose=False)
+    init_state = eq_sys.eq_state(N, beta=1/(kT_prime), manual_domain=domain, axes=[1,2], verbose=eq_verbose)
     return init_state
 
 def info_state_means(initial_state, info_subspace=np.s_[...,0,0]):
@@ -421,38 +458,62 @@ def get_tau_candidate(sim):
     for i,item in enumerate(t_list):
         t_list[i] = np.mean(item)
 
-    delta = min([abs(item-t_crit) for item in t_list])
-    t_list = list(filter(lambda x: abs(x-t_crit) <= 2*delta, t_list ))
+    #delta = min([abs(item-t_crit) for item in t_list])
+    #t_list = list(filter(lambda x: abs(x-t_crit) <= 2*delta, t_list ))
     
     return t_list, t_crit
 
-def verify_eq_state(init_state, symmetry_tol=.5, verbose=False, return_bool=False):
+def verify_eq_state(init_state, symmetry_tol=.5, separation_tol=3, verbose=False, return_bool=False):
     phi = init_state[...,0,0]
-    inf_states = separate_by_state(phi)
-    n_z, n_o = sum(inf_states['0']), sum(inf_states['1'])
 
-    symmetry = np.isclose(min(n_z,n_o), max(n_z, n_o), rtol=symmetry_tol)
-
-    separation = True
-    phi_z, phi_o = phi[inf_states['0']], phi[inf_states['1']]
-    lim_z = np.mean(phi_z)+ 3*np.std(phi_z)
-    lim_o = np.mean(phi_o)- 3*np.std(phi_o)
-    
-    
-    if lim_o < lim_z:
-        if np.max(phi_z)+.25 > np.min(phi_o):
-            separation = False
-
+    multistate =  len(np.shape(phi)) > 1
     if verbose:
+        print('multistate:',multistate)
+
+    inf_states={}
+    inf_states['0'], inf_states['1'] = phi<0, phi>0
+
+    n_z, n_o = np.sum(inf_states['0'], axis=0), np.sum(inf_states['1'], axis=0)
+
+    symmetry = np.isclose(np.minimum(n_z,n_o), np.maximum(n_z, n_o), rtol=symmetry_tol)
+
+
+    #phi_z, phi_o = phi[inf_states['0']], phi[inf_states['1']]
+    phi_z, phi_o = np.ma.masked_where(~inf_states['0'], phi), np.ma.masked_where(~inf_states['1'], phi)
+    lim_z = np.mean(phi_z, axis=0)+ separation_tol*np.std(phi_z, axis=0)
+    lim_o = np.mean(phi_o, axis=0)- separation_tol*np.std(phi_o, axis=0)
+
+    separation = np.less(lim_z, lim_o)
+
+    if hasattr(separation, 'mask'):
+        separation = separation.data
+
+
+    if multistate:
+        if any(separation == False):
+            narrow_separation = np.less(np.max(phi_z, axis=0)+.25, np.min(phi_o, axis=0))
+            separation = separation | narrow_separation
+    else:
+        if separation is False:
+            if max(phi_z)+.25 < min(phi_o):
+                separation=True
+
+
+    if verbose and not multistate:
         print('symmetry:',symmetry)
-        if symmetry is False: 
+        if not symmetry: 
             print('n_z:{},n_o:{}'.format(n_z,n_o))
         print('separation:',separation)
-        if separation is False:
-            print('lim_z: {}, liim_o: {}'.format(lim_z, lim_o))
+        if not separation:
+            print('<zz>:{}, <zo>:{}'.format(np.mean(phi_z, axis=0),np.mean(phi_o, axis=0)))
+            print('<sz>:{}, <so>:{}'.format(np.std(phi_z, axis=0),np.std(phi_o, axis=0)))
+            print('lim_z: {}, lim_o: {}'.format(lim_z, lim_o))
 
     if return_bool:
-        return bool(symmetry * separation)
+        if multistate:
+            return symmetry * separation
+        else:
+            return bool(symmetry * separation)
 
     assert separation, 'not separated'
     assert symmetry, 'not symmetric'
@@ -507,8 +568,10 @@ def sweep_tau_2(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t,
     sim = generate_sim(comp_sys, init_state, Dev, delta_t, set_tau_procs, all_state_skip=int(1/(20*delta_t)), start=start_idx, )
     sim.output=sim.run()
 
+    ###
     date1 = get_date()
-    print('time elapsed: {} \n extracting_info'.format(duration_minutes(date0,date1)))
+    print('time elapsed: {} \n processing sim'.format(duration_minutes(date0,date1)))
+    ###
 
     tau_steps = len(range(sim.nsteps)[start_idx:])
     times = min_time + np.linspace(0, tau_steps*delta_t, tau_steps+1)
@@ -528,47 +591,38 @@ def sweep_tau_2(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t,
     min_idx = int(np.argwhere(mean_W==min_mean))
     print('min_work:{:.3f} at t={:.3f}'.format(min_mean, times[min_idx]))
 
-    #work around
-    '''
-    if len(sim.output.trajectories['step_list'])== len(times)-1:
-        traj_d = {}
-        for key in ['0','1']:
-            traj_d[key] = sim.output.trajectories[key]
-        sim.output.trajectories['step_list'].append(traj_d)
-    else: print('workaround not needed')
-    '''
-    #work around over
-    date2 = get_date()
-    print('time elapsed: {} \n extracting fidelity'.format(duration_minutes(date1,date2)))
-
-    fid = [ fidelity(item) for item in sim.output.trajectories['step_list'] ]
-    valid_fid = [item['overall'] > fidelity_thresh for item in fid]
-    
-    date3 = get_date()
-    print('time elapsed: {} \n extracting initial_state'.format(duration_minutes(date2,date3)))
+    jump_array = np.array([ [item['0'],item['1']] for item in sim.output.trajectories['step_list'] ])
+    fid = fidelity_array(jump_array)
+    valid_fid = fid['overall'] > fidelity_thresh
 
     fin_s = [final_states[:,i,...] for i in range(len(final_states[0,:,0,0]))]
-    valid_fs = [verify_eq_state(state, return_bool=True) for state in fin_s]
 
-    date4 = get_date()
-    print('time elapsed: {}'.format(duration_minutes(date3,date4)))
+    valid_fs = [verify_eq_state(state, return_bool=True, separation_tol=2.8) for state in fin_s]
+   
+ 
 
-    lengths = [len(item) for item in [mean_W, fin_s, times, fid]]
+    lengths = [len(item) for item in [mean_W, fin_s, times, valid_fid]]
 
     assert max(lengths)==min(lengths), 'works:{}, final_s:{}, times:{}, fid:{} need same dimensions'.format(*lengths)
 
 
 
     if not (valid_fid[min_idx] & valid_fs[min_idx]):
-        print('original min_work fid:{}, valid final state:{}'.format(fid[min_idx]['overall'], valid_fs[min_idx]))
+        print('original min_work fid:{}, valid final state:{}'.format(fid['overall'][min_idx], valid_fs[min_idx]))
         try : 
             min_mean = np.min( [ item[0] for item in  zip(mean_W, valid_fid, valid_fs) if bool(item[1]*item[2]) ] )
             min_idx = int(np.argwhere(mean_W==min_mean))
         except:
-            print('found no better tau value')
+            print('found no success tau value')
+            write_dict['no good swap']=True
             pass
         
         print('min valid changed to:{:.3f} at t={:.3f}'.format(min_mean, times[min_idx]))
+
+    ###
+    date2 = get_date()
+    print('time elapsed: {}'.format(duration_minutes(date1,date2)))
+    ###
 
     sim.output.final_state = fin_s[min_idx]
     sim.output.tau = times[min_idx]
@@ -611,6 +665,7 @@ def sweep_tau_2(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t,
 
     write_dict['tau_sweep'] = temp_dict
     write_dict['tau_list'] = times
+
 
     return min_mean, min_idx
 
@@ -705,9 +760,3 @@ def parabola_minimize(x,y):
     
     return -params[1]/(2*params[0])
     
-    
-
-
-
-
-
