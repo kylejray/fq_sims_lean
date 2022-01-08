@@ -133,10 +133,6 @@ def plot_one_allstate(all_state, ax, state_slice=np.s_[...,0,0], t=None, sim_dic
     ax.plot(t, states.transpose())
 
 
-        
-        
-
-
 
 def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
     '''

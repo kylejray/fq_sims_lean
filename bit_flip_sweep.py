@@ -1,44 +1,38 @@
-import sys
-import os
-import numpy as np 
+import sys, os, builtins
+import numpy as np
 import datetime
 import json
 import copy
 import gc
 import matplotlib.pyplot as plt
 
-from simtools.infoenginessims.simprocedures.basic_simprocedures import ReturnFinalState
-
 sys.path.append(os.path.expanduser('~/source'))
-
 from quick_sim import setup_sim
 from kyle_tools import separate_by_state, jsonify
 from kyle_tools.info_space import is_bundle
 from sus.protocol_designer import System
 from sus.library.fq_systems import fq_pot
 
-
 sys.path.append(os.path.expanduser('~/source/simtools/'))
-from infoenginessims.api import *
+# from infoenginessims.api import *
 from infoenginessims.simprocedures import basic_simprocedures as sp
 from infoenginessims.simprocedures import running_measurements as rp
 from infoenginessims.simprocedures import trajectory_measurements as tp
-
+from infoenginessims.simprocedures.basic_simprocedures import ReturnFinalState
 from FQ_sympy_functions import find_px, DeviceParams, fidelity, fidelity_array
 
 
-
-#params 1:
+# params 1:
 Dev = DeviceParams()
 
 
-#these are some relevant dimensionful scales: Dev.alpha is the natural units for the JJ fluxes and Dev.U_0 is the natural scale for the potential
-#IMPORTANT: all energies are measured in units of Dev.U_0
-#default_real = (.084, -2.5, 12, 6.2, .2)
+# these are some relevant dimensionful scales: Dev.alpha is the natural units for the JJ fluxes and Dev.U_0 is the natural scale for the potential
+# IMPORTANT: all energies are measured in units of Dev.U_0
+# default_real = (.084, -2.5, 12, 6.2, .2)
 
 
-#these are important dimensionless simulation quantities, accounting for 
-#m being measured in units of Dev.C, lambda in units of 1/Dev.R, energy in units of Dev.U_0
+# these are important dimensionless simulation quantities, accounting for 
+# m being measured in units of Dev.C, lambda in units of 1/Dev.R, energy in units of Dev.U_0
 
 m_prime = np.array((1, 1/4))
 lambda_prime = np.array((2, 1/2))
@@ -50,7 +44,7 @@ L_sweep = Dev.L*(np.linspace(.1,1,7))
 
 L_dict={'param':'L', 'sweep':L_sweep}
 
-def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2,.2], save_dir='./', d_s_max=.44, minimize_ell=False, save_key='L'):
+def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2, .2], save_dir='./', d_s_max=.44, minimize_ell=False, save_key='L'):
 
     param_vals = sweep_dict['sweep']
     param = sweep_dict['param']
@@ -68,12 +62,11 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
             d_s_c = [item for item in d_s_c_init]
 
         cnt += 1
-        #print("\n {}={};  {} of {}".format(param, param_val, cnt, len(param_vals)))
         print("\n {}={};  {} of {}".format(param, param_val, cnt, len(param_vals)))
         temp_dict = {}
         temp_dict['notes'] = []
 
-        Dev.change_vals({param:param_val})
+        Dev.change_vals({param: param_val})
 
         try: check_device(Dev)
         except AssertionError:
@@ -153,7 +146,7 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
         
 
         date4 = get_date()
-        print('time elapsed: {} \n'.format(duration_minutes(date3,date4)))
+        print('time elapsed: {} \n'.format(duration_minutes(date3, date4)))
 
         if no_candidates:
             temp_dict['terminated'] = True
@@ -277,7 +270,7 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
     output_dict['duration'] = duration_minutes(date, end_date)
 
     if save_dir is not None:
-        output_dict['save_name'] = '{}{:.0f}'.format(save_key,10E10*Dev.__dict__[save_key])
+        output_dict['save_name'] = '{}{:.0f}'.format(save_key,10E11*Dev.__dict__[save_key])
         save_sweep(output_dict, dir=save_dir)
     
     return output_dict
