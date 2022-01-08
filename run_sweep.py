@@ -6,7 +6,7 @@ trial_N = 10_000
 test_N = 50_000
 L_range = Dev.L * np.linspace(.5,1,2)
 g_range = np.linspace(8,16,5)
-Dev.change_vals({'dbeta':.1})
+#Dev.change_vals({'dbeta':.1})
 dt = 1/100
 
 RDev = RoundDevice

@@ -43,13 +43,14 @@ Dev = DeviceParams()
 m_prime = np.array((1, 1/4))
 lambda_prime = np.array((2, 1/2))
 fidelity_thresh = .99
+ds_res=.02
 prelim_bundle_size=4
 
 L_sweep = Dev.L*(np.linspace(.1,1,7))
 
 L_dict={'param':'L', 'sweep':L_sweep}
 
-def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2,.2], save_dir='./', d_s_max=.44, minimize_ell=False):
+def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2,.2], save_dir='./', d_s_max=.44, minimize_ell=False, save_key='L'):
 
     param_vals = sweep_dict['sweep']
     param = sweep_dict['param']
@@ -60,10 +61,14 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
     output_dict['param_sweep'] = param_vals
     output_dict['sim_results'] = []
 
+    d_s_c = [item for item in d_s_c_init]
     for param_val in param_vals:
-        d_s_c = [item for item in d_s_c_init]
+        d_s_c[0] -= ds_res
+        if d_s_c[0] < d_s_c_init[0]: 
+            d_s_c = [item for item in d_s_c_init]
 
         cnt += 1
+        #print("\n {}={};  {} of {}".format(param, param_val, cnt, len(param_vals)))
         print("\n {}={};  {} of {}".format(param, param_val, cnt, len(param_vals)))
         temp_dict = {}
         temp_dict['notes'] = []
@@ -77,7 +82,7 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
 
         
         date2 = get_date()
-        print('generating prelim valid eq state')
+        print('\n generating prelim valid eq state')
 
         invalid_initial_state = True
         tries=0
@@ -88,7 +93,7 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
             try: store_sys, comp_sys = set_systems(Dev, comp_tau=10, d_store_comp=d_s_c)
             except:
                 print('unexpectedly failed at system creation')
-                continue
+                break
             
             
             init_state = generate_eq_state(store_sys, N_test, Dev.kT_prime, eq_verbose=False)
@@ -99,9 +104,9 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
                 invalid_initial_state = False
             except AssertionError:
                 if d_s_c[0] < d_s_max:
-                    d_s_c[0] += .02
+                    d_s_c[0] += ds_res
                 else:
-                    continue
+                    break
         
         temp_dict['store_params'] = store_sys.protocol.params
         temp_dict['comp_params'] = comp_sys.protocol.params
@@ -272,7 +277,7 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
     output_dict['duration'] = duration_minutes(date, end_date)
 
     if save_dir is not None:
-        output_dict['save_name'] = ''
+        output_dict['save_name'] = '{}{:.0f}'.format(save_key,10E10*Dev.__dict__[save_key])
         save_sweep(output_dict, dir=save_dir)
     
     return output_dict
@@ -297,7 +302,7 @@ def save_sweep(output_dict, name=None, dir='./'):
 
     if name is None:
         name = output_dict['save_name']
-    dir += name + output_dict['start_time'] + '.json'
+    dir += name + '_' + output_dict['start_time'] + '.json'
     with open(dir, 'w') as fout:
         json.dump(save_dict, fout)
     print('\n saved as json')
@@ -463,7 +468,7 @@ def get_tau_candidate(sim):
     
     return t_list, t_crit
 
-def verify_eq_state(init_state, symmetry_tol=.5, separation_tol=3, verbose=False, return_bool=False):
+def verify_eq_state(init_state, symmetry_tol=.9, separation_tol=3, verbose=False, return_bool=False):
     phi = init_state[...,0,0]
 
     multistate =  len(np.shape(phi)) > 1
@@ -589,7 +594,7 @@ def sweep_tau_2(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t,
 
     min_mean = np.min(mean_W)
     min_idx = int(np.argwhere(mean_W==min_mean))
-    print('min_work:{:.3f} at t={:.3f}'.format(min_mean, times[min_idx]))
+    print('min_work:{:.2f} at t={:.3f}'.format(min_mean, times[min_idx]))
 
     jump_array = np.array([ [item['0'],item['1']] for item in sim.output.trajectories['step_list'] ])
     fid = fidelity_array(jump_array)
@@ -617,7 +622,7 @@ def sweep_tau_2(Dev, t_crit, tau_list, init_state, comp_sys, store_sys, delta_t,
             write_dict['no good swap']=True
             pass
         
-        print('min valid changed to:{:.3f} at t={:.3f}'.format(min_mean, times[min_idx]))
+        print('min valid changed to:{:.2f} at t={:.3f}'.format(min_mean, times[min_idx]))
 
     ###
     date2 = get_date()

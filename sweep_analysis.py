@@ -138,7 +138,7 @@ def plot_one_allstate(all_state, ax, state_slice=np.s_[...,0,0], t=None, sim_dic
 
 
 
-def work_heatmap(directory, key1, key2, fidelity_thresh=.99):
+def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
     '''
     returns sweep values for keys 1 and 2, and work values in units of kT_prime
     '''
@@ -160,12 +160,18 @@ def work_heatmap(directory, key1, key2, fidelity_thresh=.99):
             try:
                 tau_sweep = param_value['tau_sweep']
             except:
-                pass
+                continue
 
-            if temp_dict['work'] is not None:
-                temp_dict[key1], temp_dict[key2] = [tau_sweep['sim']['device'][key] for key in [key1,key2]]
-                temp_dict['fidelity'] = tau_sweep['fidelity']['overall'][best_idx]
-                temp_dict['valid_final_state']= tau_sweep['valid_final_state'][best_idx]
+            temp_dict[key1], temp_dict[key2] = [tau_sweep['sim']['device'][key] for key in [key1,key2]]
+            temp_dict['fidelity'] = tau_sweep['fidelity']['overall'][best_idx]
+            temp_dict['valid_final_state']= tau_sweep['valid_final_state'][best_idx]
+            
+            idx = np.argmin(tau_sweep['mean_W'])
+            abs_min = {}
+            abs_min['min_w'] = tau_sweep['mean_W'][idx]
+            abs_min['valid_fs'] = tau_sweep['valid_final_state'][idx]
+            abs_min['fidelity'] = tau_sweep['fidelity']['overall'][idx]
+            temp_dict['amw'] = abs_min
 
             best_sims.append(temp_dict)
 
@@ -174,7 +180,10 @@ def work_heatmap(directory, key1, key2, fidelity_thresh=.99):
     for lst in [axis1,axis2]:
         lst.sort()
 
-    W, F, VFS = np.zeros((3,len(axis1), len(axis2)))
+    W= np.zeros((len(axis1), len(axis2)))
+    W[:] = np.nan
+    AMW_dict = { key:np.empty((len(axis1), len(axis2)), dtype='object') for key in ['min_W', 'valid_fs', 'fidelity'] }
+
 
     for ix, xval in enumerate(axis1):
         for iy, yval in enumerate(axis2):
@@ -184,24 +193,28 @@ def work_heatmap(directory, key1, key2, fidelity_thresh=.99):
 
             valid_works= [ item['work'] for item in best_sims if item[key1]==xval and item[key2]==yval ]
             valid_works = [item for item in valid_works if item is not None]
-            W[ix, iy] = np.nan
             if len(valid_works)>0:
                 W[ix,iy] = np.min(valid_works)
 
-    return axis1, axis2, W, [F,VFS]
+            abs_works= [ item['amw'] for item in best_sims if item[key1]==xval and item[key2]==yval ]
+            if len(abs_works) == 0:
+                continue
+            if len(abs_works) > 1:
+                minW = np.min([item['min_W'] for item in abs_works])
+                abs_works = list(filter(lambda x: x['min_W']==minW, abs_works))
+            for key, value in AMW_dict.items():
+                value[ix, iy] = abs_works[0][key]
 
-def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label=True, label_data=None, label_fmt="{x}", label_color=None, **imshow_kwargs):
-    if dir is None:
-        if input_arrays is not None:
-            x, y, W, _ = input_arrays
-        else:
-            print('no valid input array or directory')
-            return 
+    return axis1, axis2, W, AMW_dict
+
+def plot_work_heatmap(heatmap, key1, key2, ax=None, cbar_range=None, label=True, label_data=None, label_fmt="{x}", label_color=None, **imshow_kwargs):
+    x, y, W, _ = heatmap 
+
+    if cbar_range is None:
+        max_w = np.nanmax(W)
+        min_w = np.nanmin(W)
     else:
-        x, y, W = work_heatmap(dir, key1, key2)
-
-    max_w = np.nanmax(W)
-    min_w = np.nanmin(W)
+        min_w, max_w = cbar_range
 
     
     x = ['{:.1e}'.format(val) for val in x]
@@ -232,10 +245,10 @@ def plot_work_heatmap(key1, key2, dir,  input_arrays=None, ax=None, label=True, 
     return ax, cbar, [x,y,W]
 
 
-def get_heatmap_labels(W, label_dict):
+def heatmap_label(W, label_names, rules):
     labels = np.empty(W.shape, dtype='object')
     labels[...] = ' '
-    for label, rule in label_dict.items():
+    for label, rule in zip(label_names, rules):
         e_rule = eval(rule.format('W'))
         labels[e_rule] = label
     return labels
