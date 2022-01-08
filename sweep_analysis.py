@@ -168,7 +168,7 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
             
             idx = np.argmin(tau_sweep['mean_W'])
             abs_min = {}
-            abs_min['min_w'] = tau_sweep['mean_W'][idx]
+            abs_min['min_W'] = tau_sweep['mean_W'][idx]
             abs_min['valid_fs'] = tau_sweep['valid_final_state'][idx]
             abs_min['fidelity'] = tau_sweep['fidelity']['overall'][idx]
             temp_dict['amw'] = abs_min
@@ -182,7 +182,9 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
 
     W= np.zeros((len(axis1), len(axis2)))
     W[:] = np.nan
-    AMW_dict = { key:np.empty((len(axis1), len(axis2)), dtype='object') for key in ['min_W', 'valid_fs', 'fidelity'] }
+    AMW_dict = { key:np.empty((len(axis1), len(axis2))) for key in ['min_W', 'valid_fs', 'fidelity'] }
+    for key, val in AMW_dict.items():
+        val[:] = np.nan
 
 
     for ix, xval in enumerate(axis1):
@@ -207,8 +209,8 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
 
     return axis1, axis2, W, AMW_dict
 
-def plot_work_heatmap(heatmap, key1, key2, ax=None, cbar_range=None, label=True, label_data=None, label_fmt="{x}", label_color=None, **imshow_kwargs):
-    x, y, W, _ = heatmap 
+def plot_work_heatmap(heatmap_vals, key1, key2, ax=None, cbar_range=None, label=True, label_data=None, label_fmt="{x}", label_color=None, **imshow_kwargs):
+    x, y, W, _ = heatmap_vals
 
     if cbar_range is None:
         max_w = np.nanmax(W)
