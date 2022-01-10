@@ -140,7 +140,8 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
     '''
     best_sims = []
     directory_list = file_list(directory, extension_list=['.json'])
-    for param_sweep in directory_list:
+    for i,param_sweep in enumerate(directory_list):
+        print('\r {} of {} files scanned'.format(i, len(directory_list)), end="")
         current_sweep = open_json(directory+param_sweep)
         for param_value in current_sweep['sim_results']:
             temp_dict={}
