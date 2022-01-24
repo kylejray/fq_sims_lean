@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import gc
 
 import sys
 import os
@@ -142,7 +143,7 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
     directory_list = file_list(directory, extension_list=['.json'])
     for i,param_sweep in enumerate(directory_list):
         print('\r {} of {} files scanned'.format(i, len(directory_list)), end="")
-        current_sweep = open_json(directory+param_sweep)
+        current_sweep = open_json(param_sweep)
         for param_value in current_sweep['sim_results']:
             temp_dict={}
 
@@ -168,9 +169,12 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
             abs_min['min_W'] = tau_sweep['mean_W'][idx]
             abs_min['valid_fs'] = tau_sweep['valid_final_state'][idx]
             abs_min['fidelity'] = tau_sweep['fidelity']['overall'][idx]
+            abs_min['tau'] = param_value['tau_list'][idx]
             temp_dict['amw'] = abs_min
 
             best_sims.append(temp_dict)
+    del(current_sweep)
+    gc.collect()
 
     axis1 = list(set([ sim[key1] for sim in best_sims if sim[key1] is not None]))
     axis2 = list(set([ sim[key2] for sim in best_sims if sim[key2] is not None]))
@@ -179,7 +183,7 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
 
     W= np.zeros((len(axis1), len(axis2)))
     W[:] = np.nan
-    AMW_dict = { key:np.empty((len(axis1), len(axis2))) for key in ['min_W', 'valid_fs', 'fidelity'] }
+    AMW_dict = { key:np.empty((len(axis1), len(axis2))) for key in ['min_W', 'valid_fs', 'fidelity', 'tau'] }
     for key, val in AMW_dict.items():
         val[:] = np.nan
 
@@ -206,7 +210,10 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
 
     return axis1, axis2, W, AMW_dict
 
-def plot_work_heatmap(heatmap_vals, key1, key2, ax=None, cbar_range=None, label=True, label_data=None, label_fmt="{x}", label_color=None, **imshow_kwargs):
+label_kw = {'textcolors':'white', 'alpha':.3, 'valfmt':'{x}'}
+cb_kw = {'label':"work ($k_B$ T)",'shrink':.5}
+
+def plot_work_heatmap(heatmap_vals, key1, key2, label_slice=np.s_[:], ax=None, cbar_range=None, label=True, label_data=None, annotate_kw=label_kw, show_cbar=True, cbar_kw=cb_kw, **imshow_kwargs):
     x, y, W, _ = heatmap_vals
 
     if cbar_range is None:
@@ -216,32 +223,28 @@ def plot_work_heatmap(heatmap_vals, key1, key2, ax=None, cbar_range=None, label=
         min_w, max_w = cbar_range
 
     
-    x = ['{:.1e}'.format(val) for val in x]
+    x = ['{:.1f}'.format(val) for val in x]
     y = ['{:.1f}'.format(val) for val in y]
 
     if ax is None:
         fig, ax = plt.subplots()
+    if 'cax' not in cbar_kw.keys():
+        cbar_kw['ax'] = ax
 
-
-    im, cbar = heatmap(W, x, y, ax=ax, cmap="plasma", cbarlabel="work ($k_B$ T)", **imshow_kwargs, norm=LogNorm(vmin=min_w, vmax=max_w), cbar_kw={'shrink':.5})
+    im, cbar = heatmap(W, x, y, ax=ax, label_slice=label_slice, cmap="plasma", norm=LogNorm(vmin=min_w, vmax=max_w), cbar_kw=cbar_kw, **imshow_kwargs)
+    if show_cbar is False:
+        cbar.remove()
 
     ax.set_xlabel(key1)
     ax.set_ylabel(key2)
 
-    if label:
-        annotate_kw={}
-        annotate_kw.update(textcolors='white')
-        if label_color is not None:
-            annotate_kw.update(textcolors=label_color)
+    out = [ax, im, cbar]
 
-        annotate_kw.update(valfmt=label_fmt)    
-        texts = annotate_heatmap(im, data=label_data, **annotate_kw)
-    try:
-        fig.tight_layout()
-    except:
-        pass
+    if label:    
+        texts = annotate_heatmap(im, data=label_data.transpose(), **annotate_kw)
+        out.append(texts)
 
-    return ax, cbar, [x,y,W]
+    return out
 
 
 def heatmap_label(W, label_names, rules):
@@ -251,6 +254,15 @@ def heatmap_label(W, label_names, rules):
         e_rule = eval(rule.format('W'))
         labels[e_rule] = label
     return labels
+
+def open_heatmap(file):
+    HMD = open_json(file)
+    HML = [ HMD[key] for key in ['ax1','ax2','W','AMW']]
+    HML[2] = np.array(HML[2])
+    for key,value in HML[3].items():
+        value = np.array(value)
+    return HML
+
 
 
 def get_best_protocols(output_dict, keys=[]):
