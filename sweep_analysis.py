@@ -140,7 +140,12 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
     returns sweep values for keys 1 and 2, and work values in units of kT_prime
     '''
     best_sims = []
-    directory_list = file_list(directory, extension_list=['.json'])
+    if not isinstance(directory, list):
+        directory = [directory]
+    
+    directory_list = []
+    for item in directory:
+        directory_list += file_list(item, extension_list=['.json'])
     for i,param_sweep in enumerate(directory_list):
         print('\r {} of {} files scanned'.format(i, len(directory_list)), end="")
         current_sweep = open_json(param_sweep)
