@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append(os.path.expanduser('~/source'))
 from quick_sim import setup_sim
-from kyle_tools import separate_by_state, jsonify
+from kyle_tools import separate_by_state
 from kyle_tools.info_space import is_bundle
 from sus.protocol_designer import System
 from sus.library.fq_systems import fq_pot
@@ -44,7 +44,7 @@ L_sweep = Dev.L*(np.linspace(.1,1,7))
 
 L_dict={'param':'L', 'sweep':L_sweep}
 
-def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2, .2], save_dir='./', d_s_max=.44, minimize_ell=False, save_key='L'):
+def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/200, d_s_c_init=[.2, .2], d_s_max=.44, minimize_ell=False):
 
     param_vals = sweep_dict['sweep']
     param = sweep_dict['param']
@@ -81,6 +81,7 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
         tries=0
 
         while invalid_initial_state:
+            print(d_s_c)
             tries += 1
         
             try: store_sys, comp_sys = set_systems(Dev, comp_tau=10, d_store_comp=d_s_c)
@@ -268,38 +269,16 @@ def sweep_param(Dev=Dev, sweep_dict=L_dict, N=10_000, N_test=50_000, delta_t=1/2
 
     end_date = get_date()
     output_dict['duration'] = duration_minutes(date, end_date)
-
-    if save_dir is not None:
-        output_dict['save_name'] = '{}{:.0f}'.format(save_key,10E11*Dev.__dict__[save_key])
-        save_sweep(output_dict, dir=save_dir)
     
     return output_dict
 
-def get_date(format='%d_%m_%Y_%H%M_%S'):
-    return datetime.datetime.now().strftime(format)
-
+def get_date():
+    return datetime.datetime.now()
 
 def duration_minutes(start_time, end_time):
-    times = [item.split('_')[3:] for item in [start_time,end_time] ]
-
-    start_hr, end_hr = [ int(item[0][:2]) for item in times]
-    start_min, end_min = [ int(item[0][2:]) for item in times]
-    start_sec, end_sec = [int(item[1]) for item in times]
+    delta_t = end_time-start_time
     
-    return round(60*(end_hr-start_hr)+ end_min-start_min + (end_sec-start_sec)/60, 2)
-
-def save_sweep(output_dict, name=None, dir='./'):
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    save_dict = jsonify(output_dict)
-
-    if name is None:
-        name = output_dict['save_name']
-    dir += name + '_' + output_dict['start_time'] + '.json'
-    with open(dir, 'w') as fout:
-        json.dump(save_dict, fout)
-    print('\n saved as json')
-    return
+    return round(delta_t.seconds/60,2)
 
 def check_device(Device):
     assert 4*Device.gamma > Device.beta, '\n gamma must be >beta/4, it is set too small'
@@ -746,6 +725,7 @@ def get_best_work(sim_list, fidelity_threshold=fidelity_thresh, return_valid_fs=
         return min_work, index
 
 from scipy.optimize import curve_fit
+
 def parabola_minimize(x,y):
     assert len(x)==len(y), 'x and y need same dimensions'
 

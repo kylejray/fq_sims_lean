@@ -218,7 +218,7 @@ def work_heatmap(directory, key1='L', key2='gamma', fidelity_thresh=.99):
 label_kw = {'textcolors':'white', 'alpha':.3, 'valfmt':'{x}'}
 cb_kw = {'label':"work ($k_B$ T)",'shrink':.5}
 
-def plot_work_heatmap(heatmap_vals, key1, key2, label_slice=np.s_[:], ax=None, cbar_range=None, label=True, label_data=None, annotate_kw=label_kw, show_cbar=True, cbar_kw=cb_kw, **imshow_kwargs):
+def plot_work_heatmap(heatmap_vals, key1, key2, label_slices=[np.s_[:],np.s_[:]], ax=None, cbar_range=None, label=True, label_data=None, annotate_kw=label_kw, show_cbar=True, cbar_kw=cb_kw, **imshow_kwargs):
     x, y, W, _ = heatmap_vals
 
     if cbar_range is None:
@@ -236,7 +236,7 @@ def plot_work_heatmap(heatmap_vals, key1, key2, label_slice=np.s_[:], ax=None, c
     if 'cax' not in cbar_kw.keys():
         cbar_kw['ax'] = ax
 
-    im, cbar = heatmap(W, x, y, ax=ax, label_slice=label_slice, cmap="plasma", norm=LogNorm(vmin=min_w, vmax=max_w), cbar_kw=cbar_kw, **imshow_kwargs)
+    im, cbar = heatmap(W, x, y, ax=ax, label_slices=label_slices, cmap="plasma", norm=LogNorm(vmin=min_w, vmax=max_w), cbar_kw=cbar_kw, **imshow_kwargs)
     if show_cbar is False:
         cbar.remove()
 
