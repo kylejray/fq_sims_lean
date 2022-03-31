@@ -123,3 +123,11 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# movies and images
+.mp4
+
+# vis folders
+plots/
+ani/
+data/
