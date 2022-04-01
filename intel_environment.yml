@@ -1,0 +1,9 @@
+name: intel_mpi
+channels:
+    - intel
+    - defaults
+dependencies:
+    - numpy
+    - mpi4py
+    - matplotlib
+    -scipy
